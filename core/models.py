@@ -44,6 +44,10 @@ class AppointmentStatus(models.TextChoices):
     COMPLETED = 'completed', 'Completed'
     CANCELLED = 'cancelled', 'Cancelled'
 
+class SubscriptionPlanType(models.TextChoices):
+    FREE = 'free', 'Free'
+    BASIC = 'basic', 'Basic'
+    PRO = 'pro', 'Pro'
 
 # Profile extends Django's built-in User with role information.
 class Profile(models.Model):
@@ -58,7 +62,9 @@ class Profile(models.Model):
 # Subscription tracks which trainers have paid access and for how long.
 class Subscription(models.Model):
     trainer = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
-    plan_type = models.CharField(max_length=50)
+    plan_type = models.CharField(
+        max_length=20, choices=SubscriptionPlanType.choices, default=SubscriptionPlanType.FREE
+    )
     start_date = models.DateField()
     end_date = models.DateField()
     status = models.CharField(max_length=10, choices=SubscriptionStatus.choices, default=SubscriptionStatus.ACTIVE)

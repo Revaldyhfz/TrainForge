@@ -11,6 +11,33 @@
   {% include 'core/includes/stat_card.html' with label="Today's Sessions" value=todays_count %}
 </div>
 
+{% if user.subscription %}
+  <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-medium">Your Subscription</h2>
+      <span class="text-xs px-2 py-1 rounded-md
+                   {% if user.subscription.status == 'active' %}bg-[#D8F3DC] text-[#2D6A4F]
+                   {% else %}bg-gray-100 text-gray-500{% endif %}">
+        {{ user.subscription.get_status_display }}
+      </span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <p class="text-xs text-gray-400 mb-1">Plan</p>
+        <p class="text-sm font-medium">{{ user.subscription.get_plan_type_display }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 mb-1">Started</p>
+        <p class="text-sm font-medium">{{ user.subscription.start_date|date:"M d, Y" }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-400 mb-1">Renews</p>
+        <p class="text-sm font-medium">{{ user.subscription.end_date|date:"M d, Y" }}</p>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
   <div class="bg-white border border-gray-200 rounded-xl p-6">

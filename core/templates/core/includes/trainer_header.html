@@ -4,6 +4,14 @@
     <span class="text-base font-semibold">TrainForge</span>
   </div>
   <div class="ml-auto flex items-center gap-4">
+    {% if user.subscription %}
+      <span class="text-xs px-2 py-1 rounded-md
+                   {% if user.subscription.plan_type == 'pro' %}bg-[#2D6A4F] text-white
+                   {% elif user.subscription.plan_type == 'basic' %}bg-[#D8F3DC] text-[#2D6A4F]
+                   {% else %}bg-gray-100 text-gray-500{% endif %}">
+        {{ user.subscription.get_plan_type_display }} plan
+      </span>
+    {% endif %}
     <div class="text-right">
       <p class="text-sm font-medium">{{ user.username }}</p>
       <p class="text-xs text-gray-400">Trainer</p>

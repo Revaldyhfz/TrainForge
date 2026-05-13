@@ -15,7 +15,8 @@ from .models import (
     Profile, UserRole, Client, ClientStatus, ClientFitnessLevel,
     TrainingPlan, TrainingPlanStatus, Exercise, ExerciseType,
     Appointment, AppointmentStatus,
-    ProgressLog, Subscription, SubscriptionStatus,
+    ProgressLog, BodyMeasurement,
+    Subscription, SubscriptionStatus, SubscriptionPlanType,
 )
 from .calendar_helper import build_month_grid, get_prev_next_month
 
@@ -74,6 +75,14 @@ def register(request):
 
         user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, role=UserRole.TRAINER)
+
+        # Give every new trainer a free 1-year subscription by default.
+        Subscription.objects.create(
+            trainer=user,
+            plan_type=SubscriptionPlanType.FREE,
+            start_date=date.today(),
+            end_date=date.today() + timedelta(days=365),
+        )
 
         login(request, user)
         return redirect('dashboard')

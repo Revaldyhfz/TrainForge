@@ -39,7 +39,14 @@
               <p class="text-sm font-medium">{{ sub.trainer.username }}</p>
               <p class="text-xs text-gray-400">{{ sub.trainer.email }}</p>
             </td>
-            <td class="px-6 py-4 text-sm">{{ sub.plan_type }}</td>
+            <td class="px-6 py-4">
+  <span class="text-xs px-2 py-1 rounded-md
+               {% if sub.plan_type == 'pro' %}bg-[#2D6A4F] text-white
+               {% elif sub.plan_type == 'basic' %}bg-[#D8F3DC] text-[#2D6A4F]
+               {% else %}bg-gray-100 text-gray-500{% endif %}">
+    {{ sub.get_plan_type_display }}
+  </span>
+</td>
             <td class="px-6 py-4 text-sm text-gray-500">{{ sub.start_date|date:"M d, Y" }}</td>
             <td class="px-6 py-4 text-sm text-gray-500">{{ sub.end_date|date:"M d, Y" }}</td>
             <td class="px-6 py-4">
