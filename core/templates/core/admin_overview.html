@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+{% block title %}Admin Overview — TrainForge{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="serif text-3xl mb-1">Admin Overview</h1>
+      <p class="text-sm text-gray-500">Manage trainers and subscriptions.</p>
+    </div>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="text-sm border border-gray-200 px-4 py-2 rounded-md hover:bg-gray-50">
+        Logout
+      </button>
+    </form>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <p class="text-sm text-gray-500">Subscription management will go here.</p>
+  </div>
+</div>
+{% endblock %}

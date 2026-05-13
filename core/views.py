@@ -3,14 +3,17 @@
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Profile, UserRole
+from .permissions import trainer_required, admin_required, get_user_role
 
 
 def home(request):
     if request.user.is_authenticated:
+        role = get_user_role(request.user)
+        if role == UserRole.ADMIN:
+            return redirect('admin_overview')
         return redirect('dashboard')
     return render(request, 'core/home.html')
 
@@ -25,7 +28,6 @@ def register(request):
         password = request.POST.get('password', '')
         password_confirm = request.POST.get('password_confirm', '')
 
-        # Basic validation. Return early with a message if anything is invalid.
         if not username or not email or not password:
             messages.error(request, 'All fields are required.')
             return render(request, 'core/register.html')
@@ -46,7 +48,6 @@ def register(request):
             messages.error(request, 'Email already registered.')
             return render(request, 'core/register.html')
 
-        # Create the user and matching trainer profile.
         user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, role=UserRole.TRAINER)
 
@@ -70,6 +71,9 @@ def login_view(request):
             return render(request, 'core/login.html')
 
         login(request, user)
+        role = get_user_role(user)
+        if role == UserRole.ADMIN:
+            return redirect('admin_overview')
         return redirect('dashboard')
 
     return render(request, 'core/login.html')
@@ -80,6 +84,11 @@ def logout_view(request):
     return redirect('home')
 
 
-@login_required
+@trainer_required
 def dashboard(request):
     return render(request, 'core/dashboard.html')
+
+
+@admin_required
+def admin_overview(request):
+    return render(request, 'core/admin_overview.html')
