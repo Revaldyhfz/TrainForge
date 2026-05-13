@@ -1,0 +1,51 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}{{ form_title }} — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title=form_title subtitle=plan.title %}
+
+<div class="max-w-2xl bg-white border border-gray-200 rounded-xl p-8">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Exercise Name</label>
+      <input type="text" name="name" value="{{ values.name|default:'' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Description</label>
+      <textarea name="description" rows="2"
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.description|default:'' }}</textarea>
+    </div>
+
+    <div class="grid grid-cols-3 gap-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">Sets</label>
+        <input type="number" name="sets" min="0" value="{{ values.sets|default:0 }}"
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Reps</label>
+        <input type="number" name="reps" min="0" value="{{ values.reps|default:0 }}"
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Duration (sec)</label>
+        <input type="number" name="duration_seconds" min="0" value="{{ values.duration_seconds|default:0 }}"
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+        {{ submit_label }}
+      </button>
+      <a href="{% url 'plan_edit' plan.id %}" class="border border-gray-200 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Profile, UserRole, Client, ClientStatus
 from .permissions import trainer_required, admin_required, get_user_role
+from .models import Profile, UserRole, Client, ClientStatus, TrainingPlan, TrainingPlanStatus, Exercise
 
 
 # Public pages and auth
@@ -205,8 +206,220 @@ def client_restore(request, client_id):
     return redirect('clients_list')
 
 
+# Training plans
+
+@trainer_required
+def plans_list(request):
+    plans = TrainingPlan.objects.filter(trainer=request.user).order_by('-created_at')
+    return render(request, 'core/plans_list.html', {
+        'active_nav': 'plans',
+        'plans': plans,
+    })
+
+
+@trainer_required
+def plan_create(request):
+    clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        client_id = request.POST.get('client_id', '')
+        description = request.POST.get('description', '').strip()
+
+        if not title or not client_id:
+            messages.error(request, 'Title and client are required.')
+            return render(request, 'core/plan_form.html', {
+                'active_nav': 'plans',
+                'form_title': 'New Training Plan',
+                'submit_label': 'Create Plan',
+                'plan': None,
+                'clients': clients,
+                'values': {'title': title, 'client_id': client_id, 'description': description},
+            })
+
+        client = get_object_or_404(Client, id=client_id, trainer=request.user)
+
+        plan = TrainingPlan.objects.create(
+            trainer=request.user,
+            client=client,
+            title=title,
+            description=description,
+        )
+        messages.success(request, 'Training plan created.')
+        return redirect('plan_edit', plan_id=plan.id)
+
+    return render(request, 'core/plan_form.html', {
+        'active_nav': 'plans',
+        'form_title': 'New Training Plan',
+        'submit_label': 'Create Plan',
+        'plan': None,
+        'clients': clients,
+        'values': {},
+    })
+
+
+@trainer_required
+def plan_edit(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+    clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        client_id = request.POST.get('client_id', '')
+        description = request.POST.get('description', '').strip()
+
+        if not title or not client_id:
+            messages.error(request, 'Title and client are required.')
+        else:
+            client = get_object_or_404(Client, id=client_id, trainer=request.user)
+            plan.title = title
+            plan.client = client
+            plan.description = description
+            plan.save()
+            messages.success(request, 'Plan updated.')
+            return redirect('plan_edit', plan_id=plan.id)
+
+    exercises = plan.exercises.all()
+
+    return render(request, 'core/plan_form.html', {
+        'active_nav': 'plans',
+        'form_title': 'Edit Training Plan',
+        'submit_label': 'Save Changes',
+        'plan': plan,
+        'clients': clients,
+        'exercises': exercises,
+        'values': {
+            'title': plan.title,
+            'client_id': plan.client_id,
+            'description': plan.description,
+        },
+    })
+
+
+@trainer_required
+def plan_archive(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+    if request.method == 'POST':
+        plan.status = TrainingPlanStatus.ARCHIVED
+        plan.save()
+        messages.success(request, 'Plan archived.')
+    return redirect('plans_list')
+
+
+@trainer_required
+def plan_restore(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+    if request.method == 'POST':
+        plan.status = TrainingPlanStatus.ACTIVE
+        plan.save()
+        messages.success(request, 'Plan restored.')
+    return redirect('plans_list')
+
+
+# Exercises (always within a plan)
+
+@trainer_required
+def exercise_create(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        sets = request.POST.get('sets', '0')
+        reps = request.POST.get('reps', '0')
+        duration_seconds = request.POST.get('duration_seconds', '0')
+
+        if not name:
+            messages.error(request, 'Exercise name is required.')
+            return render(request, 'core/exercise_form.html', {
+                'active_nav': 'plans',
+                'form_title': 'Add Exercise',
+                'submit_label': 'Add Exercise',
+                'plan': plan,
+                'exercise': None,
+                'values': {
+                    'name': name, 'description': description,
+                    'sets': sets, 'reps': reps, 'duration_seconds': duration_seconds,
+                },
+            })
+
+        next_order = plan.exercises.count()
+        Exercise.objects.create(
+            training_plan=plan,
+            name=name,
+            description=description,
+            sets=int(sets or 0),
+            reps=int(reps or 0),
+            duration_seconds=int(duration_seconds or 0),
+            order_index=next_order,
+        )
+        messages.success(request, 'Exercise added.')
+        return redirect('plan_edit', plan_id=plan.id)
+
+    return render(request, 'core/exercise_form.html', {
+        'active_nav': 'plans',
+        'form_title': 'Add Exercise',
+        'submit_label': 'Add Exercise',
+        'plan': plan,
+        'exercise': None,
+        'values': {},
+    })
+
+
+@trainer_required
+def exercise_edit(request, exercise_id):
+    exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
+    plan = exercise.training_plan
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        sets = request.POST.get('sets', '0')
+        reps = request.POST.get('reps', '0')
+        duration_seconds = request.POST.get('duration_seconds', '0')
+
+        if not name:
+            messages.error(request, 'Exercise name is required.')
+        else:
+            exercise.name = name
+            exercise.description = description
+            exercise.sets = int(sets or 0)
+            exercise.reps = int(reps or 0)
+            exercise.duration_seconds = int(duration_seconds or 0)
+            exercise.save()
+            messages.success(request, 'Exercise updated.')
+            return redirect('plan_edit', plan_id=plan.id)
+
+    return render(request, 'core/exercise_form.html', {
+        'active_nav': 'plans',
+        'form_title': 'Edit Exercise',
+        'submit_label': 'Save Changes',
+        'plan': plan,
+        'exercise': exercise,
+        'values': {
+            'name': exercise.name,
+            'description': exercise.description,
+            'sets': exercise.sets,
+            'reps': exercise.reps,
+            'duration_seconds': exercise.duration_seconds,
+        },
+    })
+
+
+@trainer_required
+def exercise_delete(request, exercise_id):
+    exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
+    plan_id = exercise.training_plan.id
+
+    if request.method == 'POST':
+        exercise.delete()
+        messages.success(request, 'Exercise removed.')
+
+    return redirect('plan_edit', plan_id=plan_id)
+
 # Admin pages
 
 @admin_required
 def admin_overview(request):
     return render(request, 'core/admin_overview.html')
+

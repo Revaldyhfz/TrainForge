@@ -17,5 +17,15 @@ urlpatterns = [
     path('clients/<int:client_id>/archive/', views.client_archive, name='client_archive'),
     path('clients/<int:client_id>/restore/', views.client_restore, name='client_restore'),
 
+    path('plans/', views.plans_list, name='plans_list'),
+    path('plans/new/', views.plan_create, name='plan_create'),
+    path('plans/<int:plan_id>/edit/', views.plan_edit, name='plan_edit'),
+    path('plans/<int:plan_id>/archive/', views.plan_archive, name='plan_archive'),
+    path('plans/<int:plan_id>/restore/', views.plan_restore, name='plan_restore'),
+
+    path('plans/<int:plan_id>/exercises/new/', views.exercise_create, name='exercise_create'),
+    path('exercises/<int:exercise_id>/edit/', views.exercise_edit, name='exercise_edit'),
+    path('exercises/<int:exercise_id>/delete/', views.exercise_delete, name='exercise_delete'),
+
     path('admin-overview/', views.admin_overview, name='admin_overview'),
 ]
