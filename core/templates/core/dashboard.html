@@ -20,9 +20,10 @@
         {% for appt in todays_appointments %}
           <div class="flex items-center justify-between py-3">
             <div>
-              <p class="text-sm font-medium">{{ appt.client.name }}</p>
-              <p class="text-xs text-gray-400">{{ appt.scheduled_at|date:"H:i" }} — {{ appt.duration_minutes }} min</p>
-            </div>
+  <p class="text-sm font-medium">{{ appt.client.name }}</p>
+  <p class="text-xs text-gray-400">{{ appt.scheduled_at|date:"H:i" }} — {{ appt.duration_minutes }} min</p>
+  {% if appt.notes %}<p class="text-xs text-gray-500 mt-0.5">{{ appt.notes }}</p>{% endif %}
+</div>
             {% if appt.status == 'scheduled' %}
               <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md">Scheduled</span>
             {% elif appt.status == 'cancelled' %}
@@ -46,10 +47,11 @@
         {% for appt in upcoming_appointments %}
           <div class="flex items-center justify-between py-3">
             <div class="flex items-center gap-3">
-              <div class="text-center w-10">
-                <p class="text-xs text-gray-400 uppercase">{{ appt.scheduled_at|date:"M" }}</p>
-                <p class="text-base font-semibold">{{ appt.scheduled_at|date:"d" }}</p>
-              </div>
+              <div>
+  <p class="text-sm font-medium">{{ appt.client.name }}</p>
+  <p class="text-xs text-gray-400">{{ appt.scheduled_at|date:"H:i" }} — {{ appt.duration_minutes }} min</p>
+  {% if appt.notes %}<p class="text-xs text-gray-500 mt-0.5">{{ appt.notes }}</p>{% endif %}
+</div>
               <div>
                 <p class="text-sm font-medium">{{ appt.client.name }}</p>
                 <p class="text-xs text-gray-400">{{ appt.scheduled_at|date:"H:i" }} — {{ appt.duration_minutes }} min</p>
