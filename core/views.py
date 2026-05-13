@@ -1,13 +1,15 @@
 # core/views.py
-# View functions for public pages and auth.
+# View functions for public pages, auth, and clients.
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Profile, UserRole
+from .models import Profile, UserRole, Client, ClientStatus
 from .permissions import trainer_required, admin_required, get_user_role
 
+
+# Public pages and auth
 
 def home(request):
     if request.user.is_authenticated:
@@ -84,10 +86,126 @@ def logout_view(request):
     return redirect('home')
 
 
+# Trainer pages
+
 @trainer_required
 def dashboard(request):
-    return render(request, 'core/dashboard.html')
+    return render(request, 'core/dashboard.html', {'active_nav': 'dashboard'})
 
+
+@trainer_required
+def clients_list(request):
+    clients = Client.objects.filter(trainer=request.user).order_by('name')
+    return render(request, 'core/clients_list.html', {
+        'active_nav': 'clients',
+        'clients': clients,
+    })
+
+
+@trainer_required
+def client_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        goals = request.POST.get('goals', '').strip()
+
+        if not name or not email:
+            messages.error(request, 'Name and email are required.')
+            return render(request, 'core/client_form.html', {
+                'active_nav': 'clients',
+                'form_title': 'Add Client',
+                'submit_label': 'Create Client',
+                'client': None,
+                'values': {'name': name, 'email': email, 'phone': phone, 'goals': goals},
+            })
+
+        Client.objects.create(
+            trainer=request.user,
+            name=name,
+            email=email,
+            phone=phone,
+            goals=goals,
+        )
+        messages.success(request, 'Client created.')
+        return redirect('clients_list')
+
+    return render(request, 'core/client_form.html', {
+        'active_nav': 'clients',
+        'form_title': 'Add Client',
+        'submit_label': 'Create Client',
+        'client': None,
+        'values': {},
+    })
+
+
+@trainer_required
+def client_edit(request, client_id):
+    client = get_object_or_404(Client, id=client_id, trainer=request.user)
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        goals = request.POST.get('goals', '').strip()
+
+        if not name or not email:
+            messages.error(request, 'Name and email are required.')
+            return render(request, 'core/client_form.html', {
+                'active_nav': 'clients',
+                'form_title': 'Edit Client',
+                'submit_label': 'Save Changes',
+                'client': client,
+                'values': {'name': name, 'email': email, 'phone': phone, 'goals': goals},
+            })
+
+        client.name = name
+        client.email = email
+        client.phone = phone
+        client.goals = goals
+        client.save()
+        messages.success(request, 'Client updated.')
+        return redirect('clients_list')
+
+    return render(request, 'core/client_form.html', {
+        'active_nav': 'clients',
+        'form_title': 'Edit Client',
+        'submit_label': 'Save Changes',
+        'client': client,
+        'values': {
+            'name': client.name,
+            'email': client.email,
+            'phone': client.phone,
+            'goals': client.goals,
+        },
+    })
+
+
+@trainer_required
+def client_archive(request, client_id):
+    client = get_object_or_404(Client, id=client_id, trainer=request.user)
+
+    if request.method == 'POST':
+        client.status = ClientStatus.INACTIVE
+        client.save()
+        messages.success(request, 'Client archived.')
+
+    return redirect('clients_list')
+
+
+@trainer_required
+def client_restore(request, client_id):
+    client = get_object_or_404(Client, id=client_id, trainer=request.user)
+
+    if request.method == 'POST':
+        client.status = ClientStatus.ACTIVE
+        client.save()
+        messages.success(request, 'Client restored.')
+
+    return redirect('clients_list')
+
+
+# Admin pages
 
 @admin_required
 def admin_overview(request):

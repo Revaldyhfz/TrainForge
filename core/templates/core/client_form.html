@@ -1,0 +1,45 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}{{ form_title }} — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title=form_title subtitle='Client details.' %}
+
+<div class="max-w-2xl bg-white border border-gray-200 rounded-xl p-8">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Name</label>
+      <input type="text" name="name" value="{{ values.name|default:'' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Email</label>
+      <input type="email" name="email" value="{{ values.email|default:'' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Phone</label>
+      <input type="text" name="phone" value="{{ values.phone|default:'' }}"
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Goals</label>
+      <textarea name="goals" rows="3"
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.goals|default:'' }}</textarea>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+        {{ submit_label }}
+      </button>
+      <a href="{% url 'clients_list' %}" class="border border-gray-200 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

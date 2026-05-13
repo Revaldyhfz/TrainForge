@@ -1,23 +1,10 @@
-{% extends 'core/base.html' %}
+{% extends 'core/trainer_base.html' %}
 {% block title %}Dashboard — TrainForge{% endblock %}
 
-{% block content %}
-<div class="max-w-5xl mx-auto px-6 py-8">
-  <div class="flex items-center justify-between mb-8">
-    <div>
-      <h1 class="serif text-3xl mb-1">Dashboard</h1>
-      <p class="text-sm text-gray-500">Welcome back, {{ user.username }}.</p>
-    </div>
-    <form method="post" action="{% url 'logout' %}">
-      {% csrf_token %}
-      <button type="submit" class="text-sm border border-gray-200 px-4 py-2 rounded-md hover:bg-gray-50">
-        Logout
-      </button>
-    </form>
-  </div>
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title='Dashboard' subtitle='Welcome back.' %}
 
-  <div class="bg-white border border-gray-200 rounded-xl p-6">
-    <p class="text-sm text-gray-500">Dashboard content coming next.</p>
-  </div>
+<div class="bg-white border border-gray-200 rounded-xl p-6">
+  <p class="text-sm text-gray-500">Dashboard content coming next.</p>
 </div>
 {% endblock %}

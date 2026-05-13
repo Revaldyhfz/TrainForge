@@ -1,0 +1,8 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+{% include 'core/includes/trainer_nav.html' with active=active_nav %}
+<main class="ml-56 p-8">
+  {% block trainer_content %}{% endblock %}
+</main>
+{% endblock %}

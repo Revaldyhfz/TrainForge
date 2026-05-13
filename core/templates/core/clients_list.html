@@ -1,0 +1,61 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}Clients — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title='Clients' subtitle='Manage your client roster.' action_url='/clients/new/' action_label='Add Client' %}
+
+{% if clients %}
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <table class="w-full">
+      <thead>
+        <tr class="text-xs text-gray-400 border-b border-gray-100">
+          <th class="text-left px-6 py-3 font-medium">Name</th>
+          <th class="text-left px-6 py-3 font-medium">Email</th>
+          <th class="text-left px-6 py-3 font-medium">Goals</th>
+          <th class="text-left px-6 py-3 font-medium">Status</th>
+          <th class="text-left px-6 py-3 font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for client in clients %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 text-sm font-medium">{{ client.name }}</td>
+            <td class="px-6 py-4 text-sm text-gray-500">{{ client.email }}</td>
+            <td class="px-6 py-4 text-sm text-gray-500">{{ client.goals|default:"—" }}</td>
+            <td class="px-6 py-4">
+              {% if client.status == 'active' %}
+                <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md">Active</span>
+              {% else %}
+                <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex gap-2">
+                <a href="{% url 'client_edit' client.id %}" class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">Edit</a>
+                {% if client.status == 'active' %}
+                  <form method="post" action="{% url 'client_archive' client.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50">Archive</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'client_restore' client.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">Restore</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+    <p class="text-sm text-gray-500 mb-4">You don't have any clients yet.</p>
+    <a href="{% url 'client_create' %}" class="inline-block bg-[#2D6A4F] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+      Add your first client
+    </a>
+  </div>
+{% endif %}
+{% endblock %}
