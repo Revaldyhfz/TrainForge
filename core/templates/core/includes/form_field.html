@@ -1,0 +1,8 @@
+{# Reusable labelled input. Pass: label, name, type (default text), required (default true). #}
+<div>
+  <label class="block text-sm font-medium mb-1">{{ label }}</label>
+  <input type="{{ type|default:'text' }}"
+         name="{{ name }}"
+         {% if required|default:True %}required{% endif %}
+         class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+</div>
