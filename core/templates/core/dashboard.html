@@ -39,6 +39,31 @@
   </div>
 
   <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <h2 class="font-medium mb-4">Upcoming Sessions</h2>
+    <p class="text-xs text-gray-400 mb-3">Next 7 days</p>
+    {% if upcoming_appointments %}
+      <div class="divide-y divide-gray-100">
+        {% for appt in upcoming_appointments %}
+          <div class="flex items-center justify-between py-3">
+            <div class="flex items-center gap-3">
+              <div class="text-center w-10">
+                <p class="text-xs text-gray-400 uppercase">{{ appt.scheduled_at|date:"M" }}</p>
+                <p class="text-base font-semibold">{{ appt.scheduled_at|date:"d" }}</p>
+              </div>
+              <div>
+                <p class="text-sm font-medium">{{ appt.client.name }}</p>
+                <p class="text-xs text-gray-400">{{ appt.scheduled_at|date:"H:i" }} — {{ appt.duration_minutes }} min</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-sm text-gray-500">Nothing scheduled in the next 7 days.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
     <h2 class="font-medium mb-4">Recent Clients</h2>
     {% if recent_clients %}
       <div class="divide-y divide-gray-100">
@@ -56,6 +81,28 @@
       </div>
     {% else %}
       <p class="text-sm text-gray-500">No clients yet. <a href="{% url 'client_create' %}" class="text-[#2D6A4F] hover:underline">Add your first client</a>.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <h2 class="font-medium mb-4">Recent Progress</h2>
+    {% if recent_logs %}
+      <div class="divide-y divide-gray-100">
+        {% for log in recent_logs %}
+          <div class="py-3">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-medium">{{ log.client.name }}</p>
+              <p class="text-xs text-gray-400">{{ log.logged_at|date:"M d" }}</p>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">
+              {{ log.exercise.name }} — {{ log.sets_completed }} × {{ log.reps_completed }}
+              {% if log.weight_kg %} @ {{ log.weight_kg }} kg{% endif %}
+            </p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-sm text-gray-500">No progress logged yet.</p>
     {% endif %}
   </div>
 

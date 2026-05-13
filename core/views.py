@@ -100,13 +100,12 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
-
-# Trainer pages
 @trainer_required
 def dashboard(request):
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
+    next_seven_days = today + timedelta(days=7)
 
     total_clients = Client.objects.filter(
         trainer=request.user,
@@ -130,10 +129,21 @@ def dashboard(request):
         scheduled_at__date=today,
     ).order_by('scheduled_at')
 
+    upcoming_appointments = Appointment.objects.filter(
+        trainer=request.user,
+        scheduled_at__date__gt=today,
+        scheduled_at__date__lte=next_seven_days,
+        status=AppointmentStatus.SCHEDULED,
+    ).order_by('scheduled_at')[:5]
+
     recent_clients = Client.objects.filter(
         trainer=request.user,
         status=ClientStatus.ACTIVE,
     ).order_by('-created_at')[:5]
+
+    recent_logs = ProgressLog.objects.filter(
+        client__trainer=request.user,
+    ).select_related('client', 'exercise').order_by('-logged_at')[:5]
 
     return render(request, 'core/dashboard.html', {
         'active_nav': 'dashboard',
@@ -142,7 +152,9 @@ def dashboard(request):
         'active_plans': active_plans,
         'todays_count': todays_appointments.count(),
         'todays_appointments': todays_appointments,
+        'upcoming_appointments': upcoming_appointments,
         'recent_clients': recent_clients,
+        'recent_logs': recent_logs,
     })
 
 @trainer_required
