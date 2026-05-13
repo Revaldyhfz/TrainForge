@@ -21,7 +21,11 @@ class ClientStatus(models.TextChoices):
     ACTIVE = 'active', 'Active'
     INACTIVE = 'inactive', 'Inactive'
 
-
+class ClientFitnessLevel(models.TextChoices):
+    BEGINNER = 'beginner', 'Beginner'
+    INTERMEDIATE = 'intermediate', 'Intermediate'
+    ADVANCED = 'advanced', 'Advanced'
+    
 class TrainingPlanStatus(models.TextChoices):
     ACTIVE = 'active', 'Active'
     ARCHIVED = 'archived', 'Archived'
@@ -57,20 +61,24 @@ class Subscription(models.Model):
         return f"{self.trainer.username} - {self.plan_type}"
 
 
-# Client represents a person the trainer is working with.
 class Client(models.Model):
     trainer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True)
     goals = models.TextField(blank=True)
+    age = models.PositiveIntegerField(null=True, blank=True)
+    height_cm = models.PositiveIntegerField(null=True, blank=True)
+    weight_kg = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    fitness_level = models.CharField(
+        max_length=15, choices=ClientFitnessLevel.choices, blank=True
+    )
     status = models.CharField(max_length=10, choices=ClientStatus.choices, default=ClientStatus.ACTIVE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
-
 
 # ClientAvailability stores a client's preferred training days/times.
 class ClientAvailability(models.Model):

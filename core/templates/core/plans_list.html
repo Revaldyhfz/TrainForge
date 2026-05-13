@@ -13,11 +13,16 @@
             <h3 class="font-medium">{{ plan.title }}</h3>
             <p class="text-sm text-gray-400 mt-0.5">{{ plan.client.name }}</p>
           </div>
-          {% if plan.status == 'active' %}
-            <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md">Active</span>
-          {% else %}
-            <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md">Archived</span>
-          {% endif %}
+          <div class="flex gap-2">
+            {% if plan.generated_by_ai %}
+              <span class="text-xs bg-[#F0FDF4] text-[#2D6A4F] border border-[#D8F3DC] px-2 py-1 rounded-md">✨ AI</span>
+            {% endif %}
+            {% if plan.status == 'active' %}
+              <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md">Active</span>
+            {% else %}
+              <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md">Archived</span>
+            {% endif %}
+          </div>
         </div>
 
         {% if plan.description %}

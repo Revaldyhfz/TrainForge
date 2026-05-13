@@ -30,6 +30,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
+OPENAI_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 

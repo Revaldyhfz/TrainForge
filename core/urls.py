@@ -37,5 +37,8 @@ urlpatterns = [
     path('progress/<int:log_id>/edit/', views.progress_edit, name='progress_edit'),
     path('progress/<int:log_id>/delete/', views.progress_delete, name='progress_delete'),
     
+    path('plans/<int:plan_id>/ai/questionnaire/', views.ai_questionnaire, name='ai_questionnaire'),
+    path('plans/<int:plan_id>/ai/chat/', views.ai_chat, name='ai_chat'),
+    
     path('admin-overview/', views.admin_overview, name='admin_overview'),
 ]

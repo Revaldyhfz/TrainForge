@@ -26,6 +26,9 @@ from .models import (
 )
 from django.core.paginator import Paginator
 
+import json
+from .ai_service import generate_exercises, build_progress_summary
+
 # Public pages and auth
 
 def home(request):
@@ -167,7 +170,6 @@ def clients_list(request):
         'clients': clients,
     })
 
-
 @trainer_required
 def client_create(request):
     if request.method == 'POST':
@@ -175,6 +177,10 @@ def client_create(request):
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
         goals = request.POST.get('goals', '').strip()
+        age = request.POST.get('age', '').strip()
+        height_cm = request.POST.get('height_cm', '').strip()
+        weight_kg = request.POST.get('weight_kg', '').strip()
+        fitness_level = request.POST.get('fitness_level', '').strip()
 
         if not name or not email:
             messages.error(request, 'Name and email are required.')
@@ -183,7 +189,11 @@ def client_create(request):
                 'form_title': 'Add Client',
                 'submit_label': 'Create Client',
                 'client': None,
-                'values': {'name': name, 'email': email, 'phone': phone, 'goals': goals},
+                'values': {
+                    'name': name, 'email': email, 'phone': phone, 'goals': goals,
+                    'age': age, 'height_cm': height_cm, 'weight_kg': weight_kg,
+                    'fitness_level': fitness_level,
+                },
             })
 
         Client.objects.create(
@@ -192,6 +202,10 @@ def client_create(request):
             email=email,
             phone=phone,
             goals=goals,
+            age=int(age) if age else None,
+            height_cm=int(height_cm) if height_cm else None,
+            weight_kg=float(weight_kg) if weight_kg else None,
+            fitness_level=fitness_level,
         )
         messages.success(request, 'Client created.')
         return redirect('clients_list')
@@ -214,6 +228,10 @@ def client_edit(request, client_id):
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
         goals = request.POST.get('goals', '').strip()
+        age = request.POST.get('age', '').strip()
+        height_cm = request.POST.get('height_cm', '').strip()
+        weight_kg = request.POST.get('weight_kg', '').strip()
+        fitness_level = request.POST.get('fitness_level', '').strip()
 
         if not name or not email:
             messages.error(request, 'Name and email are required.')
@@ -222,13 +240,21 @@ def client_edit(request, client_id):
                 'form_title': 'Edit Client',
                 'submit_label': 'Save Changes',
                 'client': client,
-                'values': {'name': name, 'email': email, 'phone': phone, 'goals': goals},
+                'values': {
+                    'name': name, 'email': email, 'phone': phone, 'goals': goals,
+                    'age': age, 'height_cm': height_cm, 'weight_kg': weight_kg,
+                    'fitness_level': fitness_level,
+                },
             })
 
         client.name = name
         client.email = email
         client.phone = phone
         client.goals = goals
+        client.age = int(age) if age else None
+        client.height_cm = int(height_cm) if height_cm else None
+        client.weight_kg = float(weight_kg) if weight_kg else None
+        client.fitness_level = fitness_level
         client.save()
         messages.success(request, 'Client updated.')
         return redirect('clients_list')
@@ -243,9 +269,12 @@ def client_edit(request, client_id):
             'email': client.email,
             'phone': client.phone,
             'goals': client.goals,
+            'age': client.age or '',
+            'height_cm': client.height_cm or '',
+            'weight_kg': client.weight_kg or '',
+            'fitness_level': client.fitness_level,
         },
     })
-
 
 @trainer_required
 def client_archive(request, client_id):
@@ -776,6 +805,121 @@ def progress_delete(request, log_id):
         messages.success(request, 'Log removed.')
     return redirect('progress_list')
 
+
+# AI training plan generation
+
+@trainer_required
+def ai_questionnaire(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+
+    if request.method == 'POST':
+        questionnaire = {
+            'muscle_groups': request.POST.get('muscle_groups', '').strip(),
+            'session_duration': request.POST.get('session_duration', '').strip(),
+            'goal': request.POST.get('goal', '').strip(),
+            'target_date': request.POST.get('target_date', '').strip(),
+            'equipment': request.POST.get('equipment', '').strip(),
+        }
+
+        if not all(questionnaire.values()):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'core/ai_questionnaire.html', {
+                'active_nav': 'plans',
+                'plan': plan,
+                'values': questionnaire,
+            })
+
+        # Store questionnaire in session and trigger first AI call.
+        request.session['ai_plan_id'] = plan.id
+        request.session['ai_questionnaire'] = questionnaire
+        request.session['ai_conversation'] = []
+
+        return redirect('ai_chat', plan_id=plan.id)
+
+    return render(request, 'core/ai_questionnaire.html', {
+        'active_nav': 'plans',
+        'plan': plan,
+        'values': {},
+    })
+
+
+@trainer_required
+def ai_chat(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+
+    # Session guard — must have completed the questionnaire first.
+    if request.session.get('ai_plan_id') != plan.id or 'ai_questionnaire' not in request.session:
+        return redirect('ai_questionnaire', plan_id=plan.id)
+
+    questionnaire = request.session['ai_questionnaire']
+    conversation = request.session.get('ai_conversation', [])
+
+    # Handle the "Complete" action — append AI's exercises to the plan.
+    if request.method == 'POST' and request.POST.get('action') == 'complete':
+        last_exercises = request.session.get('ai_last_exercises', [])
+        next_order = plan.exercises.count()
+
+        for i, ex in enumerate(last_exercises):
+            Exercise.objects.create(
+                training_plan=plan,
+                name=ex.get('name', 'Untitled'),
+                description=ex.get('description', ''),
+                sets=int(ex.get('sets', 0) or 0),
+                reps=int(ex.get('reps', 0) or 0),
+                duration_seconds=0,
+                order_index=next_order + i,
+            )
+
+        plan.generated_by_ai = True
+        plan.save()
+
+        # Clean up session.
+        for key in ('ai_plan_id', 'ai_questionnaire', 'ai_conversation', 'ai_last_exercises', 'ai_last_message'):
+            request.session.pop(key, None)
+
+        messages.success(request, f'{len(last_exercises)} exercises added.')
+        return redirect('plan_edit', plan_id=plan.id)
+
+    # Handle the "Refine" action — send feedback to AI.
+    refinement_feedback = None
+    if request.method == 'POST' and request.POST.get('action') == 'refine':
+        refinement_feedback = request.POST.get('feedback', '').strip()
+
+    # Run the AI call (first load OR refinement).
+    if request.method == 'POST' or 'ai_last_message' not in request.session:
+        try:
+            result = generate_exercises(
+                plan=plan,
+                questionnaire=questionnaire,
+                client_obj=plan.client,
+                progress_summary=build_progress_summary(plan.client),
+                conversation_history=conversation,
+                refinement_feedback=refinement_feedback,
+            )
+
+            # Update conversation history with this turn.
+            new_history = list(conversation)
+            if refinement_feedback:
+                new_history.append({"role": "user", "content": f"Feedback: {refinement_feedback}"})
+            new_history.append({"role": "assistant", "content": result['assistant_response']})
+
+            request.session['ai_conversation'] = new_history
+            request.session['ai_last_message'] = result['message']
+            request.session['ai_last_exercises'] = result['exercises']
+
+        except json.JSONDecodeError:
+            messages.error(request, 'AI returned an unexpected format. Please try again.')
+        except Exception as e:
+            messages.error(request, f'AI generation failed: {str(e)}')
+
+    return render(request, 'core/ai_chat.html', {
+        'active_nav': 'plans',
+        'plan': plan,
+        'ai_message': request.session.get('ai_last_message', ''),
+        'ai_exercises': request.session.get('ai_last_exercises', []),
+        'questionnaire': questionnaire,
+    })
+    
 # Admin pages
 
 @admin_required

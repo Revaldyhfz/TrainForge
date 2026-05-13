@@ -26,6 +26,41 @@
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
+    <div class="border-t border-gray-100 pt-4">
+      <p class="text-xs text-gray-400 mb-3">Optional — helps personalise AI suggestions and training plans.</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">Age</label>
+          <input type="number" name="age" min="1" max="120" value="{{ values.age|default:'' }}"
+                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Fitness Level</label>
+          <select name="fitness_level"
+                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+            <option value="">—</option>
+            <option value="beginner" {% if values.fitness_level == 'beginner' %}selected{% endif %}>Beginner</option>
+            <option value="intermediate" {% if values.fitness_level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+            <option value="advanced" {% if values.fitness_level == 'advanced' %}selected{% endif %}>Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">Height (cm)</label>
+          <input type="number" name="height_cm" min="1" max="300" value="{{ values.height_cm|default:'' }}"
+                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Weight (kg)</label>
+          <input type="number" step="0.1" name="weight_kg" min="0" value="{{ values.weight_kg|default:'' }}"
+                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        </div>
+      </div>
+    </div>
+
     <div>
       <label class="block text-sm font-medium mb-1">Goals</label>
       <textarea name="goals" rows="3"

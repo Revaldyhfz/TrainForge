@@ -1,0 +1,63 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}Generate with AI — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title='Generate with AI' subtitle=plan.title %}
+
+<div class="max-w-2xl bg-white border border-gray-200 rounded-xl p-8">
+  <p class="text-sm text-gray-500 mb-6">
+    Answer a few questions and we'll suggest exercises based on your client's goals and progress.
+  </p>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Target Muscle Groups</label>
+      <input type="text" name="muscle_groups" value="{{ values.muscle_groups|default:'' }}" required
+             placeholder="e.g. Chest, shoulders, triceps"
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Session Duration (minutes)</label>
+      <input type="number" name="session_duration" min="15" max="180" value="{{ values.session_duration|default:'60' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Goal</label>
+      <textarea name="goal" rows="2" required
+                placeholder="e.g. Build chest size and improve bench press strength"
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.goal|default:'' }}</textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Target Date</label>
+      <input type="date" name="target_date" value="{{ values.target_date|default:'' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Equipment Preference</label>
+      <select name="equipment" required
+              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        <option value="">Select equipment</option>
+        <option value="Machines" {% if values.equipment == 'Machines' %}selected{% endif %}>Machines</option>
+        <option value="Free weights" {% if values.equipment == 'Free weights' %}selected{% endif %}>Free weights</option>
+        <option value="Both" {% if values.equipment == 'Both' %}selected{% endif %}>Both</option>
+        <option value="Bodyweight" {% if values.equipment == 'Bodyweight' %}selected{% endif %}>Bodyweight</option>
+      </select>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+        Generate Exercises
+      </button>
+      <a href="{% url 'plan_edit' plan.id %}" class="border border-gray-200 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

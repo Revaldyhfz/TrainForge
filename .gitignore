@@ -27,3 +27,7 @@ staticfiles/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local utility scripts (developer-specific)
+reset-env.sh
+free-ram.sh

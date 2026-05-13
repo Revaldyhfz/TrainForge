@@ -48,11 +48,16 @@
   {% if plan %}
     <div class="bg-white border border-gray-200 rounded-xl p-8">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="font-medium">Exercises</h2>
+      <h2 class="font-medium">Exercises</h2>
+      <div class="flex gap-3">
+        <a href="{% url 'ai_questionnaire' plan.id %}" class="text-sm text-[#2D6A4F] hover:underline">
+          ✨ Generate with AI
+        </a>
         <a href="{% url 'exercise_create' plan.id %}" class="text-sm text-[#2D6A4F] hover:underline">
           + Add Exercise
         </a>
       </div>
+    </div>
 
       {% if exercises %}
         <div class="divide-y divide-gray-100">
