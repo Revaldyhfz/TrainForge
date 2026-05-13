@@ -22,6 +22,7 @@ urlpatterns = [
     path('plans/<int:plan_id>/edit/', views.plan_edit, name='plan_edit'),
     path('plans/<int:plan_id>/archive/', views.plan_archive, name='plan_archive'),
     path('plans/<int:plan_id>/restore/', views.plan_restore, name='plan_restore'),
+    path('plans/<int:plan_id>/', views.plan_detail, name='plan_detail'),
 
     path('plans/<int:plan_id>/exercises/new/', views.exercise_create, name='exercise_create'),
     path('exercises/<int:exercise_id>/edit/', views.exercise_edit, name='exercise_edit'),

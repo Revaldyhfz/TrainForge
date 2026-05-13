@@ -10,7 +10,9 @@
       <div class="bg-white border border-gray-200 rounded-xl p-6">
         <div class="flex items-start justify-between mb-3">
           <div>
-            <h3 class="font-medium">{{ plan.title }}</h3>
+            <h3 class="font-medium">
+              <a href="{% url 'plan_detail' plan.id %}" class="hover:text-[#2D6A4F]">{{ plan.title }}</a>
+            </h3>
             <p class="text-sm text-gray-400 mt-0.5">{{ plan.client.name }}</p>
           </div>
           <div class="flex gap-2">
@@ -32,6 +34,9 @@
         <p class="text-xs text-gray-400 mb-4">{{ plan.exercises.count }} exercise{{ plan.exercises.count|pluralize }}</p>
 
         <div class="flex gap-2">
+          <a href="{% url 'plan_detail' plan.id %}" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50">
+            View
+          </a>
           <a href="{% url 'plan_edit' plan.id %}" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50">
             Edit
           </a>

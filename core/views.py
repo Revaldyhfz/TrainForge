@@ -351,7 +351,16 @@ def plan_create(request):
         'values': {},
     })
 
-
+@trainer_required
+def plan_detail(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+    exercises = plan.exercises.all()
+    return render(request, 'core/plan_detail.html', {
+        'active_nav': 'plans',
+        'plan': plan,
+        'exercises': exercises,
+    })
+    
 @trainer_required
 def plan_edit(request, plan_id):
     plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)

@@ -1,0 +1,60 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}{{ plan.title }} — TrainForge{% endblock %}
+
+{% block trainer_content %}
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="serif text-2xl md:text-3xl mb-1">{{ plan.title }}</h1>
+    <p class="text-sm text-gray-500">{{ plan.client.name }}</p>
+  </div>
+  <div class="flex gap-2">
+    {% if plan.generated_by_ai %}
+      <span class="text-xs bg-[#F0FDF4] text-[#2D6A4F] border border-[#D8F3DC] px-2 py-1 rounded-md self-center">✨ AI</span>
+    {% endif %}
+    {% if plan.status == 'active' %}
+      <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md self-center">Active</span>
+    {% else %}
+      <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md self-center">Archived</span>
+    {% endif %}
+    <a href="{% url 'plan_edit' plan.id %}" class="text-sm border border-gray-200 px-4 py-2 rounded-md hover:bg-gray-50">
+      Edit
+    </a>
+    <a href="{% url 'plans_list' %}" class="text-sm border border-gray-200 px-4 py-2 rounded-md hover:bg-gray-50">
+      Back
+    </a>
+  </div>
+</div>
+
+<div class="max-w-3xl space-y-6">
+
+  {% if plan.description %}
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <h2 class="font-medium mb-2">Description</h2>
+      <p class="text-sm text-gray-600 leading-relaxed">{{ plan.description }}</p>
+    </div>
+  {% endif %}
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <h2 class="font-medium mb-4">Exercises</h2>
+
+    {% if exercises %}
+      <div class="divide-y divide-gray-100">
+        {% for ex in exercises %}
+          <div class="py-3">
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-sm font-medium">{{ forloop.counter }}. {{ ex.name }}</p>
+              <p class="text-xs text-gray-500">{{ ex.sets }} × {{ ex.reps }}</p>
+            </div>
+            {% if ex.description %}
+              <p class="text-xs text-gray-500">{{ ex.description }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-sm text-gray-500">No exercises yet. <a href="{% url 'plan_edit' plan.id %}" class="text-[#2D6A4F] hover:underline">Edit the plan</a> to add exercises.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
