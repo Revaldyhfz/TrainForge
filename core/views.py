@@ -325,22 +325,18 @@ def exercise_create(request, plan_id):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
-        sets = request.POST.get('sets', '0')
-        reps = request.POST.get('reps', '0')
-        duration_seconds = request.POST.get('duration_seconds', '0')
+        sets = request.POST.get('sets', '')
+        reps = request.POST.get('reps', '')
 
-        if not name:
-            messages.error(request, 'Exercise name is required.')
+        if not name or not sets or not reps:
+            messages.error(request, 'Name, sets, and reps are required.')
             return render(request, 'core/exercise_form.html', {
                 'active_nav': 'plans',
                 'form_title': 'Add Exercise',
                 'submit_label': 'Add Exercise',
                 'plan': plan,
                 'exercise': None,
-                'values': {
-                    'name': name, 'description': description,
-                    'sets': sets, 'reps': reps, 'duration_seconds': duration_seconds,
-                },
+                'values': {'name': name, 'description': description, 'sets': sets, 'reps': reps},
             })
 
         next_order = plan.exercises.count()
@@ -348,9 +344,9 @@ def exercise_create(request, plan_id):
             training_plan=plan,
             name=name,
             description=description,
-            sets=int(sets or 0),
-            reps=int(reps or 0),
-            duration_seconds=int(duration_seconds or 0),
+            sets=int(sets),
+            reps=int(reps),
+            duration_seconds=0,
             order_index=next_order,
         )
         messages.success(request, 'Exercise added.')

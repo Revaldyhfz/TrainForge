@@ -60,11 +60,7 @@
             <div class="flex items-center justify-between py-3">
               <div>
                 <p class="text-sm font-medium">{{ ex.name }}</p>
-                <p class="text-xs text-gray-500">
-                  {% if ex.sets %}{{ ex.sets }} sets{% endif %}
-                  {% if ex.reps %} × {{ ex.reps }} reps{% endif %}
-                  {% if ex.duration_seconds %} · {{ ex.duration_seconds }}s{% endif %}
-                </p>
+                <p class="text-xs text-gray-500">{{ ex.sets }} sets × {{ ex.reps }} reps</p>
               </div>
               <div class="flex gap-2">
                 <a href="{% url 'exercise_edit' ex.id %}" class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">Edit</a>
