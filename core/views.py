@@ -12,18 +12,19 @@ from .email_service import send_appointment_email, send_training_plan_email
 
 from datetime import datetime, date, timedelta
 from .models import (
-    Profile, UserRole, Client, ClientStatus,
-    TrainingPlan, TrainingPlanStatus, Exercise,
+    Profile, UserRole, Client, ClientStatus, ClientFitnessLevel,
+    TrainingPlan, TrainingPlanStatus, Exercise, ExerciseType,
     Appointment, AppointmentStatus,
     ProgressLog, Subscription, SubscriptionStatus,
 )
 from .calendar_helper import build_month_grid, get_prev_next_month
 
 from .models import (
-    Profile, UserRole, Client, ClientStatus,
-    TrainingPlan, TrainingPlanStatus, Exercise,
+    Profile, UserRole, Client, ClientStatus, ClientFitnessLevel,
+    TrainingPlan, TrainingPlanStatus, Exercise, ExerciseType,
     Appointment, AppointmentStatus,
-    ProgressLog,
+    ProgressLog, BodyMeasurement,
+    Subscription, SubscriptionStatus,
 )
 from django.core.paginator import Paginator
 
@@ -481,7 +482,6 @@ def exercise_create(request, plan_id):
         'values': {},
     })
 
-
 @trainer_required
 def exercise_edit(request, exercise_id):
     exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
@@ -490,37 +490,34 @@ def exercise_edit(request, exercise_id):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
-        sets = request.POST.get('sets', '0')
-        reps = request.POST.get('reps', '0')
-        duration_seconds = request.POST.get('duration_seconds', '0')
+        exercise_type = request.POST.get('exercise_type', ExerciseType.REPS)
 
         if not name:
             messages.error(request, 'Exercise name is required.')
         else:
+            kwargs = _exercise_kwargs_from_post(exercise_type, request.POST)
             exercise.name = name
             exercise.description = description
-            exercise.sets = int(sets or 0)
-            exercise.reps = int(reps or 0)
-            exercise.duration_seconds = int(duration_seconds or 0)
+            exercise.exercise_type = exercise_type
+            exercise.sets = kwargs.get('sets')
+            exercise.reps = kwargs.get('reps')
+            exercise.duration_minutes = kwargs.get('duration_minutes')
+            exercise.distance_km = kwargs.get('distance_km')
             exercise.save()
             messages.success(request, 'Exercise updated.')
             return redirect('plan_edit', plan_id=plan.id)
 
-    return render(request, 'core/exercise_form.html', {
-        'active_nav': 'plans',
-        'form_title': 'Edit Exercise',
-        'submit_label': 'Save Changes',
-        'plan': plan,
-        'exercise': exercise,
-        'values': {
-            'name': exercise.name,
-            'description': exercise.description,
-            'sets': exercise.sets,
-            'reps': exercise.reps,
-            'duration_seconds': exercise.duration_seconds,
-        },
-    })
-
+    values = {
+        'name': exercise.name,
+        'description': exercise.description,
+        'exercise_type': exercise.exercise_type,
+        'sets': exercise.sets,
+        'reps': exercise.reps,
+        'duration_minutes': exercise.duration_minutes,
+        'distance_km': exercise.distance_km,
+    }
+    return render(request, 'core/exercise_form.html',
+                  _exercise_form_context(plan, exercise, 'Edit Exercise', 'Save Changes', values))
 
 @trainer_required
 def exercise_delete(request, exercise_id):
@@ -684,36 +681,69 @@ def appointment_cancel(request, appointment_id):
 def progress_list(request):
     clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
 
-    selected_client_id = request.GET.get('client', '')
-    selected_exercise_id = request.GET.get('exercise', '')
-
+    selected_client_id = request.GET.get('client_id', '')
+    selected_exercise_id = request.GET.get('exercise_id', '')
     selected_client = None
     exercises = []
     logs = []
+    body_measurements = []
 
     if selected_client_id:
         selected_client = get_object_or_404(Client, id=selected_client_id, trainer=request.user)
-        # Show all exercises across all of this client's plans.
         exercises = Exercise.objects.filter(
-            training_plan__client=selected_client,
-            training_plan__trainer=request.user,
-        ).order_by('name')
+            training_plan__client=selected_client, training_plan__trainer=request.user
+        ).select_related('training_plan').order_by('training_plan__title', 'order_index')
 
-        log_query = ProgressLog.objects.filter(client=selected_client).order_by('-logged_at')
+        body_measurements = BodyMeasurement.objects.filter(client=selected_client).order_by('-logged_at')[:10]
+
+        log_qs = ProgressLog.objects.filter(client=selected_client).select_related('exercise')
         if selected_exercise_id:
-            log_query = log_query.filter(exercise_id=selected_exercise_id)
-        logs = log_query
+            log_qs = log_qs.filter(exercise_id=selected_exercise_id)
+        logs = log_qs.order_by('-logged_at')
 
     return render(request, 'core/progress_list.html', {
         'active_nav': 'progress',
         'clients': clients,
         'exercises': exercises,
         'logs': logs,
+        'body_measurements': body_measurements,
         'selected_client': selected_client,
         'selected_client_id': selected_client_id,
         'selected_exercise_id': selected_exercise_id,
     })
 
+@trainer_required
+def body_weight_log(request):
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id', '')
+        weight_kg = request.POST.get('weight_kg', '').strip()
+        logged_at = request.POST.get('logged_at', '').strip()
+
+        if not client_id or not weight_kg or not logged_at:
+            messages.error(request, 'Client, weight, and date are required.')
+        else:
+            client = get_object_or_404(Client, id=client_id, trainer=request.user)
+            BodyMeasurement.objects.create(
+                client=client,
+                weight_kg=weight_kg,
+                logged_at=logged_at,
+            )
+            messages.success(request, 'Body weight logged.')
+            return redirect(f"/progress/?client_id={client.id}")
+
+    return redirect('progress_list')
+
+
+@trainer_required
+def body_weight_delete(request, measurement_id):
+    measurement = get_object_or_404(BodyMeasurement, id=measurement_id, client__trainer=request.user)
+    client_id = measurement.client.id
+
+    if request.method == 'POST':
+        measurement.delete()
+        messages.success(request, 'Body weight entry removed.')
+
+    return redirect(f"/progress/?client_id={client_id}")
 
 @trainer_required
 def progress_create(request):
@@ -837,7 +867,6 @@ def progress_delete(request, log_id):
         messages.success(request, 'Log removed.')
     return redirect('progress_list')
 
-
 # AI training plan generation
 
 @trainer_required
@@ -891,16 +920,47 @@ def ai_chat(request, plan_id):
         last_exercises = request.session.get('ai_last_exercises', [])
         next_order = plan.exercises.count()
 
+        saved_count = 0
         for i, ex in enumerate(last_exercises):
+            ex_type = ex.get('exercise_type', 'reps')
+            sets = _int_or_none(ex.get('sets'))
+            reps = _int_or_none(ex.get('reps'))
+            duration = _int_or_none(ex.get('duration_minutes'))
+            distance = _float_or_none(ex.get('distance_km'))
+
+            # Validate: at least one type-relevant field must be filled.
+            if ex_type == 'reps' and not (sets and reps):
+                continue
+            if ex_type == 'duration' and not (sets and duration):
+                continue
+            if ex_type == 'distance' and not distance:
+                continue
+
             Exercise.objects.create(
                 training_plan=plan,
                 name=ex.get('name', 'Untitled'),
                 description=ex.get('description', ''),
-                sets=int(ex.get('sets', 0) or 0),
-                reps=int(ex.get('reps', 0) or 0),
-                duration_seconds=0,
-                order_index=next_order + i,
+                exercise_type=ex_type,
+                sets=sets,
+                reps=reps,
+                duration_minutes=duration,
+                distance_km=distance,
+                order_index=next_order + saved_count,
             )
+            saved_count += 1
+
+        plan.generated_by_ai = True
+        plan.save()
+
+        # Clean up session.
+        for key in ('ai_plan_id', 'ai_questionnaire', 'ai_conversation', 'ai_last_exercises', 'ai_last_message'):
+            request.session.pop(key, None)
+
+        if saved_count < len(last_exercises):
+            messages.warning(request, f'{saved_count} exercises added. {len(last_exercises) - saved_count} skipped due to incomplete data.')
+        else:
+            messages.success(request, f'{saved_count} exercises added.')
+        return redirect('plan_edit', plan_id=plan.id)
 
         plan.generated_by_ai = True
         plan.save()
@@ -982,3 +1042,52 @@ def admin_overview(request):
         'active_subs': active_subs,
         'archived_subs': archived_subs,
     })
+    
+def _exercise_kwargs_from_post(exercise_type, post):
+    if exercise_type == ExerciseType.REPS:
+        return {
+            'sets': _int_or_none(post.get('sets')),
+            'reps': _int_or_none(post.get('reps')),
+            'duration_minutes': None,
+            'distance_km': None,
+        }
+    if exercise_type == ExerciseType.DURATION:
+        return {
+            'sets': _int_or_none(post.get('sets_duration')),
+            'reps': None,
+            'duration_minutes': _int_or_none(post.get('duration_minutes')),
+            'distance_km': None,
+        }
+    if exercise_type == ExerciseType.DISTANCE:
+        return {
+            'sets': None,
+            'reps': None,
+            'duration_minutes': None,
+            'distance_km': _float_or_none(post.get('distance_km')),
+        }
+    return {}
+
+
+def _int_or_none(value):
+    try:
+        return int(value) if value not in (None, '') else None
+    except (ValueError, TypeError):
+        return None
+
+
+def _float_or_none(value):
+    try:
+        return float(value) if value not in (None, '') else None
+    except (ValueError, TypeError):
+        return None
+
+
+def _exercise_form_context(plan, exercise, form_title, submit_label, values):
+    return {
+        'active_nav': 'plans',
+        'form_title': form_title,
+        'submit_label': submit_label,
+        'plan': plan,
+        'exercise': exercise,
+        'values': values,
+    }

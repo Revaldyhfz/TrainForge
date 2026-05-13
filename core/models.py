@@ -187,3 +187,17 @@ class ProgressLog(models.Model):
         if ex_type == ExerciseType.DISTANCE:
             return f"{self.distance_km} km"
         return ""
+    
+# BodyMeasurement records a client's body weight at a point in time.
+class BodyMeasurement(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='body_measurements')
+    weight_kg = models.DecimalField(max_digits=5, decimal_places=1)
+    logged_at = models.DateField()
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-logged_at']
+
+    def __str__(self):
+        return f"{self.client.name} - {self.weight_kg}kg on {self.logged_at}"

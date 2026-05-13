@@ -40,6 +40,11 @@ urlpatterns = [
     path('progress/<int:log_id>/edit/', views.progress_edit, name='progress_edit'),
     path('progress/<int:log_id>/delete/', views.progress_delete, name='progress_delete'),
     
+    path('progress/body-weight/log/', views.body_weight_log, name='body_weight_log'),
+    path('progress/body-weight/<int:measurement_id>/delete/', views.body_weight_delete, name='body_weight_delete'),
+    
+    path('progress/body-weight/<int:measurement_id>/delete/', views.body_weight_delete, name='body_weight_delete'),
+    
     path('plans/<int:plan_id>/ai/questionnaire/', views.ai_questionnaire, name='ai_questionnaire'),
     path('plans/<int:plan_id>/ai/chat/', views.ai_chat, name='ai_chat'),
     

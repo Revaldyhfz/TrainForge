@@ -23,7 +23,17 @@
           <div class="py-3">
             <div class="flex items-center justify-between mb-1">
               <p class="text-sm font-medium">{{ ex.name }}</p>
-              <p class="text-xs text-gray-500">{{ ex.sets }} × {{ ex.reps }}</p>
+              <p class="text-xs text-gray-500">
+                {% if ex.exercise_type == 'reps' %}
+                  {{ ex.sets }} sets × {{ ex.reps }} reps
+                {% elif ex.exercise_type == 'duration' %}
+                  {{ ex.sets }} sets × {{ ex.duration_minutes }} min
+                {% elif ex.exercise_type == 'distance' %}
+                  {{ ex.distance_km }} km
+                {% else %}
+                  {{ ex.sets }} sets × {{ ex.reps }} reps
+                {% endif %}
+              </p>
             </div>
             {% if ex.description %}
               <p class="text-xs text-gray-500">{{ ex.description }}</p>

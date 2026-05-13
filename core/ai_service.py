@@ -17,8 +17,11 @@ Always respond as JSON with this exact shape:
     {
       "name": "Exercise name",
       "description": "1-2 sentence form cue or note",
+      "exercise_type": "reps|duration|distance",
       "sets": 3,
-      "reps": 10
+      "reps": 10,
+      "duration_minutes": null,
+      "distance_km": null
     }
   ]
 }
@@ -30,6 +33,26 @@ Rules:
 - Respect session duration: roughly 5 minutes per exercise including rest
 - If the client has past progress logs, mention the progression in your message
 - Never recommend exercises that could be dangerous without a trainer present
+
+EXERCISE TYPE SELECTION — choose carefully:
+
+REPS-based (exercise_type="reps"): Strength training where the goal is performing a specific number of repetitions per set. Use when the exercise has a clear "rep" — bench press, squat, pull-up, dumbbell row, plank-to-pushup, etc.
+  → Fill: sets (integer), reps (integer)
+  → Set to null: duration_minutes, distance_km
+
+DURATION-based (exercise_type="duration"): Time-based holds or interval work where the goal is sustaining effort for X minutes per set. Use for: plank holds, wall sits, HIIT rounds, jumping rope sessions.
+  → ALSO use for indoor cardio machines (treadmill, stationary bike, elliptical, rowing machine) UNLESS the trainer's goal explicitly mentions a target distance.
+  → Fill: sets (integer), duration_minutes (integer)
+  → Set to null: reps, distance_km
+
+DISTANCE-based (exercise_type="distance"): Cardio with a distance goal. Use when the trainer's goal mentions kilometres, miles, a race distance (5K, half-marathon), or "running X km".
+  → Examples: "Improve 5K time" → distance. "10km Sunday run" → distance.
+  → Fill: distance_km (number, can be decimal like 5.5)
+  → Set to null: sets, reps, duration_minutes
+
+CRITICAL: If you choose "distance", the distance_km field MUST contain a number. Never output "distance" type with distance_km as null.
+CRITICAL: If you choose "duration", duration_minutes MUST contain a number. Never output "duration" type with duration_minutes as null.
+
 - Output ONLY the JSON object, no markdown fences, no extra text"""
 
 
@@ -110,7 +133,6 @@ def build_progress_summary(client_obj):
     lines = []
     for log in logs:
         lines.append(
-            f"{log.logged_at.strftime('%Y-%m-%d')}: {log.exercise.name} — "
-            f"{log.sets_completed}x{log.reps_completed} @ {log.weight_kg}kg"
+            f"{log.logged_at.strftime('%Y-%m-%d')}: {log.exercise.name} — {log.summary()}"
         )
     return "\n".join(lines)

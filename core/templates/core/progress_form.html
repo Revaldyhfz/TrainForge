@@ -93,7 +93,6 @@
         opt.hidden = true;
       }
     });
-    // Reset exercise selection if its client no longer matches.
     const selected = exerciseSelect.selectedOptions[0];
     if (selected && selected.dataset.clientId && selected.dataset.clientId !== clientId) {
       exerciseSelect.value = '';
@@ -103,5 +102,4 @@
   clientSelect.addEventListener('change', filterExercises);
   filterExercises();
 </script>
-
 {% endblock %}

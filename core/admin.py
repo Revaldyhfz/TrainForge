@@ -10,8 +10,8 @@ from .models import (
     Exercise,
     Appointment,
     ProgressLog,
+    BodyMeasurement,
 )
-
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
@@ -81,5 +81,13 @@ class ProgressLogAdmin(admin.ModelAdmin):
     list_display = ['client', 'exercise', 'logged_at', 'sets_completed', 'reps_completed', 'weight_kg', 'duration_minutes', 'distance_km']
     list_filter = ['exercise']
     search_fields = ['client__name', 'exercise__name']
+    date_hierarchy = 'logged_at'
+    list_per_page = 20
+    
+@admin.register(BodyMeasurement)
+class BodyMeasurementAdmin(admin.ModelAdmin):
+    list_display = ['client', 'weight_kg', 'logged_at']
+    list_filter = ['client']
+    search_fields = ['client__name']
     date_hierarchy = 'logged_at'
     list_per_page = 20
