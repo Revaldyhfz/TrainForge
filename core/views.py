@@ -9,7 +9,7 @@ from .models import Profile, UserRole, Client, ClientStatus
 from .permissions import trainer_required, admin_required, get_user_role
 from .models import Profile, UserRole, Client, ClientStatus, TrainingPlan, TrainingPlanStatus, Exercise
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from .models import (
     Profile, UserRole, Client, ClientStatus,
     TrainingPlan, TrainingPlanStatus, Exercise,
@@ -102,11 +102,48 @@ def logout_view(request):
 
 
 # Trainer pages
-
 @trainer_required
 def dashboard(request):
-    return render(request, 'core/dashboard.html', {'active_nav': 'dashboard'})
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
 
+    total_clients = Client.objects.filter(
+        trainer=request.user,
+        status=ClientStatus.ACTIVE,
+    ).count()
+
+    sessions_this_week = Appointment.objects.filter(
+        trainer=request.user,
+        scheduled_at__date__gte=week_start,
+        scheduled_at__date__lte=week_end,
+        status=AppointmentStatus.SCHEDULED,
+    ).count()
+
+    active_plans = TrainingPlan.objects.filter(
+        trainer=request.user,
+        status=TrainingPlanStatus.ACTIVE,
+    ).count()
+
+    todays_appointments = Appointment.objects.filter(
+        trainer=request.user,
+        scheduled_at__date=today,
+    ).order_by('scheduled_at')
+
+    recent_clients = Client.objects.filter(
+        trainer=request.user,
+        status=ClientStatus.ACTIVE,
+    ).order_by('-created_at')[:5]
+
+    return render(request, 'core/dashboard.html', {
+        'active_nav': 'dashboard',
+        'total_clients': total_clients,
+        'sessions_this_week': sessions_this_week,
+        'active_plans': active_plans,
+        'todays_count': todays_appointments.count(),
+        'todays_appointments': todays_appointments,
+        'recent_clients': recent_clients,
+    })
 
 @trainer_required
 def clients_list(request):

@@ -2,9 +2,62 @@
 {% block title %}Dashboard — TrainForge{% endblock %}
 
 {% block trainer_content %}
-{% include 'core/includes/page_header.html' with title='Dashboard' subtitle='Welcome back.' %}
+{% include 'core/includes/page_header.html' with title='Dashboard' subtitle='Here is what is happening today.' %}
 
-<div class="bg-white border border-gray-200 rounded-xl p-6">
-  <p class="text-sm text-gray-500">Dashboard content coming next.</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  {% include 'core/includes/stat_card.html' with label='Total Clients' value=total_clients %}
+  {% include 'core/includes/stat_card.html' with label='Sessions This Week' value=sessions_this_week %}
+  {% include 'core/includes/stat_card.html' with label='Active Plans' value=active_plans %}
+  {% include 'core/includes/stat_card.html' with label="Today's Sessions" value=todays_count %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <h2 class="font-medium mb-4">Today's Appointments</h2>
+    {% if todays_appointments %}
+      <div class="divide-y divide-gray-100">
+        {% for appt in todays_appointments %}
+          <div class="flex items-center justify-between py-3">
+            <div>
+              <p class="text-sm font-medium">{{ appt.client.name }}</p>
+              <p class="text-xs text-gray-400">{{ appt.scheduled_at|date:"H:i" }} — {{ appt.duration_minutes }} min</p>
+            </div>
+            {% if appt.status == 'scheduled' %}
+              <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md">Scheduled</span>
+            {% elif appt.status == 'cancelled' %}
+              <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md">Cancelled</span>
+            {% else %}
+              <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md">Completed</span>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-sm text-gray-500">No sessions scheduled for today.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <h2 class="font-medium mb-4">Recent Clients</h2>
+    {% if recent_clients %}
+      <div class="divide-y divide-gray-100">
+        {% for client in recent_clients %}
+          <div class="flex items-center gap-3 py-3">
+            <div class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium">
+              {{ client.name|slice:":1"|upper }}
+            </div>
+            <div>
+              <p class="text-sm font-medium">{{ client.name }}</p>
+              <p class="text-xs text-gray-400">{{ client.goals|default:"No goals set"|truncatechars:50 }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-sm text-gray-500">No clients yet. <a href="{% url 'client_create' %}" class="text-[#2D6A4F] hover:underline">Add your first client</a>.</p>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}
