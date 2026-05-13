@@ -14,6 +14,7 @@ from .models import (
     Profile, UserRole, Client, ClientStatus,
     TrainingPlan, TrainingPlanStatus, Exercise,
     Appointment, AppointmentStatus,
+    ProgressLog, Subscription, SubscriptionStatus,
 )
 from .calendar_helper import build_month_grid, get_prev_next_month
 
@@ -23,6 +24,7 @@ from .models import (
     Appointment, AppointmentStatus,
     ProgressLog,
 )
+from django.core.paginator import Paginator
 
 # Public pages and auth
 
@@ -778,5 +780,29 @@ def progress_delete(request, log_id):
 
 @admin_required
 def admin_overview(request):
-    return render(request, 'core/admin_overview.html')
 
+    search = request.GET.get('search', '').strip()
+
+    subscriptions = Subscription.objects.select_related('trainer').order_by('-created_at')
+    if search:
+        subscriptions = subscriptions.filter(
+            trainer__username__icontains=search,
+        ) | subscriptions.filter(
+            trainer__email__icontains=search,
+        )
+
+    paginator = Paginator(subscriptions, 10)
+    page_number = request.GET.get('page', 1)
+    page = paginator.get_page(page_number)
+
+    total_trainers = User.objects.filter(profile__role=UserRole.TRAINER).count()
+    active_subs = Subscription.objects.filter(status=SubscriptionStatus.ACTIVE).count()
+    archived_subs = Subscription.objects.filter(status=SubscriptionStatus.ARCHIVED).count()
+
+    return render(request, 'core/admin_overview.html', {
+        'page': page,
+        'search': search,
+        'total_trainers': total_trainers,
+        'active_subs': active_subs,
+        'archived_subs': archived_subs,
+    })

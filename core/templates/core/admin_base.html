@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-{% include 'core/includes/trainer_nav.html' with active=active_nav %}
+{% include 'core/includes/admin_nav.html' with active=active_nav %}
 
 <button onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full')"
         class="md:hidden fixed top-4 left-4 z-40 bg-white border border-gray-200 p-2 rounded-md hover:bg-gray-50"
@@ -12,6 +12,6 @@
 </button>
 
 <main class="md:ml-56 p-4 md:p-8 pt-16 md:pt-8">
-  {% block trainer_content %}{% endblock %}
+  {% block admin_content %}{% endblock %}
 </main>
 {% endblock %}

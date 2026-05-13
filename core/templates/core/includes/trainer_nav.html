@@ -1,6 +1,8 @@
 {# Sidebar nav for trainer pages. Pass `active` to highlight current page. #}
-<aside class="w-56 bg-white border-r border-gray-200 fixed h-full p-4 flex flex-col">
-  <a href="{% url 'dashboard' %}" class="text-base font-semibold mb-8">TrainForge</a>
+<aside id="sidebar"
+       class="w-56 bg-white border-r border-gray-200 fixed h-full p-4 flex flex-col z-30
+              transition-transform -translate-x-full md:translate-x-0">
+  <a href="{% url 'dashboard' %}" class="text-base font-semibold mb-8 px-3">TrainForge</a>
 
   <nav class="flex flex-col gap-1 flex-1">
     <a href="{% url 'dashboard' %}"
@@ -24,8 +26,6 @@
       Progress
     </a>
   </nav>
-
-  
 
   <div class="border-t border-gray-100 pt-4">
     <p class="text-xs text-gray-500 px-3 mb-2">{{ user.username }}</p>
