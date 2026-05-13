@@ -10,7 +10,7 @@
 
     <div>
       <label class="block text-sm font-medium mb-1">Client</label>
-      <select name="client_id" required
+      <select name="client_id" id="client-select" required
               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         <option value="">Select a client</option>
         {% for c in clients %}
@@ -23,12 +23,14 @@
 
     <div>
       <label class="block text-sm font-medium mb-1">Exercise</label>
-      <select name="exercise_id" required
+      <select name="exercise_id" id="exercise-select" required
               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         <option value="">Select an exercise</option>
         {% for ex in exercises %}
-          <option value="{{ ex.id }}" {% if values.exercise_id|stringformat:"s" == ex.id|stringformat:"s" %}selected{% endif %}>
-            {{ ex.training_plan.client.name }} — {{ ex.name }} ({{ ex.training_plan.title }})
+          <option value="{{ ex.id }}"
+                  data-client-id="{{ ex.training_plan.client_id }}"
+                  {% if values.exercise_id|stringformat:"s" == ex.id|stringformat:"s" %}selected{% endif %}>
+            {{ ex.name }} ({{ ex.training_plan.title }})
           </option>
         {% endfor %}
       </select>
@@ -61,7 +63,7 @@
     <div>
       <label class="block text-sm font-medium mb-1">Notes</label>
       <textarea name="notes" rows="3" placeholder="Optional notes..."
-                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.notes|default:'' }}</textarea>
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]"></textarea>
     </div>
 
     <div class="flex gap-3 pt-2">
@@ -74,4 +76,32 @@
     </div>
   </form>
 </div>
+
+<script>
+  // Filter exercise dropdown to only show exercises for the selected client.
+  const clientSelect = document.getElementById('client-select');
+  const exerciseSelect = document.getElementById('exercise-select');
+  const allExerciseOptions = Array.from(exerciseSelect.querySelectorAll('option'));
+
+  function filterExercises() {
+    const clientId = clientSelect.value;
+    allExerciseOptions.forEach(opt => {
+      const optClient = opt.dataset.clientId;
+      if (!optClient || optClient === clientId) {
+        opt.hidden = false;
+      } else {
+        opt.hidden = true;
+      }
+    });
+    // Reset exercise selection if its client no longer matches.
+    const selected = exerciseSelect.selectedOptions[0];
+    if (selected && selected.dataset.clientId && selected.dataset.clientId !== clientId) {
+      exerciseSelect.value = '';
+    }
+  }
+
+  clientSelect.addEventListener('change', filterExercises);
+  filterExercises();
+</script>
+
 {% endblock %}
