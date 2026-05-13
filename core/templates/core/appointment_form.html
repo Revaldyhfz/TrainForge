@@ -5,7 +5,7 @@
 {% include 'core/includes/page_header.html' with title=form_title %}
 
 <div class="max-w-2xl bg-white border border-gray-200 rounded-xl p-8">
-  <form method="post" class="space-y-4">
+  <form method="post" class="space-y-4" id="appointment-form">
     {% csrf_token %}
 
     <div>
@@ -47,7 +47,8 @@
     </div>
 
     <div class="flex gap-3 pt-2">
-      <button type="submit" class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+      <button type="submit" id="appointment-submit-btn"
+              class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840] disabled:opacity-50">
         {{ submit_label }}
       </button>
       <a href="{% url 'appointments_list' %}" class="border border-gray-200 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
@@ -56,4 +57,15 @@
     </div>
   </form>
 </div>
+
+<script>
+  // Show 'Booking...' indicator while the form submits and email sends.
+  const apptForm = document.getElementById('appointment-form');
+  const apptBtn = document.getElementById('appointment-submit-btn');
+  apptForm.addEventListener('submit', () => {
+    apptBtn.disabled = true;
+    apptBtn.textContent = 'Sending email...';
+  });
+</script>
+
 {% endblock %}

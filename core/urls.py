@@ -24,7 +24,9 @@ urlpatterns = [
     path('plans/<int:plan_id>/restore/', views.plan_restore, name='plan_restore'),
     path('plans/<int:plan_id>/', views.plan_detail, name='plan_detail'),
 
+    path('plans/<int:plan_id>/send-email/', views.plan_send_email, name='plan_send_email'),
     path('plans/<int:plan_id>/exercises/new/', views.exercise_create, name='exercise_create'),
+    
     path('exercises/<int:exercise_id>/edit/', views.exercise_edit, name='exercise_edit'),
     path('exercises/<int:exercise_id>/delete/', views.exercise_delete, name='exercise_delete'),
     

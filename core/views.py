@@ -8,6 +8,7 @@ from django.contrib import messages
 from .models import Profile, UserRole, Client, ClientStatus
 from .permissions import trainer_required, admin_required, get_user_role
 from .models import Profile, UserRole, Client, ClientStatus, TrainingPlan, TrainingPlanStatus, Exercise
+from .email_service import send_appointment_email, send_training_plan_email
 
 from datetime import datetime, date, timedelta
 from .models import (
@@ -418,6 +419,22 @@ def plan_restore(request, plan_id):
         messages.success(request, 'Plan restored.')
     return redirect('plans_list')
 
+@trainer_required
+def plan_send_email(request, plan_id):
+    plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
+
+    if request.method == 'POST':
+        if plan.exercises.count() == 0:
+            messages.error(request, 'Cannot send a plan with no exercises.')
+            return redirect('plan_detail', plan_id=plan.id)
+
+        try:
+            send_training_plan_email(plan, plan.client.email)
+            messages.success(request, f'Plan emailed to {plan.client.name}.')
+        except Exception as e:
+            messages.error(request, f'Email failed: {str(e)}')
+
+    return redirect('plan_detail', plan_id=plan.id)
 
 # Exercises (always within a plan)
 
@@ -586,14 +603,20 @@ def appointment_create(request):
         client = get_object_or_404(Client, id=client_id, trainer=request.user)
         scheduled_at = datetime.strptime(f"{scheduled_date} {scheduled_time}", "%Y-%m-%d %H:%M")
 
-        Appointment.objects.create(
+        appointment = Appointment.objects.create(
             trainer=request.user,
             client=client,
             scheduled_at=scheduled_at,
             duration_minutes=int(duration_minutes or 60),
             notes=notes,
         )
-        messages.success(request, 'Session booked.')
+
+        try:
+            send_appointment_email(appointment)
+            messages.success(request, f'Session booked. Confirmation emailed to {client.name}.')
+        except Exception as e:
+            messages.warning(request, f'Session booked but email failed: {str(e)}')
+
         return redirect('appointments_list')
 
     return render(request, 'core/appointment_form.html', {

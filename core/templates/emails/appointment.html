@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Session Confirmed</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1C1C1C;">
+
+  <div style="border-bottom: 2px solid #2D6A4F; padding-bottom: 16px; margin-bottom: 24px;">
+    <h1 style="color: #2D6A4F; margin: 0;">TrainForge</h1>
+  </div>
+
+  <h2 style="font-size: 22px; margin-bottom: 8px;">Hi {{ client.name }},</h2>
+  <p style="color: #555; line-height: 1.6;">
+    Your training session with {{ trainer.username }} is confirmed.
+  </p>
+
+  <div style="background: #F0FDF4; border: 1px solid #D8F3DC; border-radius: 8px; padding: 20px; margin: 24px 0;">
+    <table style="width: 100%; font-size: 14px;">
+      <tr>
+        <td style="padding: 6px 0; color: #888; width: 80px;">When</td>
+        <td style="padding: 6px 0;"><strong>{{ appointment.scheduled_at|date:"l, F j, Y" }}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; color: #888;">Time</td>
+        <td style="padding: 6px 0;"><strong>{{ appointment.scheduled_at|date:"H:i" }}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; color: #888;">Duration</td>
+        <td style="padding: 6px 0;"><strong>{{ appointment.duration_minutes }} minutes</strong></td>
+      </tr>
+    </table>
+    {% if appointment.notes %}
+      <p style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #D8F3DC; color: #555;">
+        <strong>Notes:</strong> {{ appointment.notes }}
+      </p>
+    {% endif %}
+  </div>
+
+  <p style="color: #555; line-height: 1.6;">
+    Add this session to your calendar — we've attached an .ics file you can open in Google Calendar, Apple Calendar, or Outlook.
+  </p>
+
+  <p style="margin-top: 32px; color: #888; font-size: 13px;">
+    — {{ trainer.username }}, your trainer
+  </p>
+
+  <div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid #eee; color: #aaa; font-size: 12px;">
+    <p>Sent via TrainForge</p>
+  </div>
+
+</body>
+</html>

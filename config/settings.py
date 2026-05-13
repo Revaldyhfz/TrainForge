@@ -36,6 +36,9 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+RESEND_API_KEY = os.getenv('RESEND_API_KEY')
+EMAIL_FROM_ADDRESS = os.getenv('EMAIL_FROM_ADDRESS', 'onboarding@resend.dev')
+EMAIL_FROM_NAME = os.getenv('EMAIL_FROM_NAME', 'TrainForge')
 
 # Application definition
 
