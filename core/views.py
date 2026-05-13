@@ -17,6 +17,13 @@ from .models import (
 )
 from .calendar_helper import build_month_grid, get_prev_next_month
 
+from .models import (
+    Profile, UserRole, Client, ClientStatus,
+    TrainingPlan, TrainingPlanStatus, Exercise,
+    Appointment, AppointmentStatus,
+    ProgressLog,
+)
+
 # Public pages and auth
 
 def home(request):
@@ -558,6 +565,165 @@ def appointment_cancel(request, appointment_id):
         appointment.save()
         messages.success(request, 'Session cancelled.')
     return redirect('appointments_list')
+
+# Progress logs
+
+@trainer_required
+def progress_list(request):
+    clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
+
+    selected_client_id = request.GET.get('client', '')
+    selected_exercise_id = request.GET.get('exercise', '')
+
+    selected_client = None
+    exercises = []
+    logs = []
+
+    if selected_client_id:
+        selected_client = get_object_or_404(Client, id=selected_client_id, trainer=request.user)
+        # Show all exercises across all of this client's plans.
+        exercises = Exercise.objects.filter(
+            training_plan__client=selected_client,
+            training_plan__trainer=request.user,
+        ).order_by('name')
+
+        log_query = ProgressLog.objects.filter(client=selected_client).order_by('-logged_at')
+        if selected_exercise_id:
+            log_query = log_query.filter(exercise_id=selected_exercise_id)
+        logs = log_query
+
+    return render(request, 'core/progress_list.html', {
+        'active_nav': 'progress',
+        'clients': clients,
+        'exercises': exercises,
+        'logs': logs,
+        'selected_client': selected_client,
+        'selected_client_id': selected_client_id,
+        'selected_exercise_id': selected_exercise_id,
+    })
+
+
+@trainer_required
+def progress_create(request):
+    clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
+
+    # Build a flat list of (exercise_id, "Plan Title — Exercise Name") so the form
+    # can show ONE dropdown of exercises, scoped to this trainer.
+    exercises = Exercise.objects.filter(
+        training_plan__trainer=request.user,
+    ).select_related('training_plan', 'training_plan__client').order_by('training_plan__client__name', 'name')
+
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id', '')
+        exercise_id = request.POST.get('exercise_id', '')
+        logged_date = request.POST.get('logged_date', '')
+        sets_completed = request.POST.get('sets_completed', '')
+        reps_completed = request.POST.get('reps_completed', '')
+        weight_kg = request.POST.get('weight_kg', '0')
+        notes = request.POST.get('notes', '').strip()
+
+        if not client_id or not exercise_id or not logged_date or not sets_completed or not reps_completed:
+            messages.error(request, 'Client, exercise, date, sets, and reps are required.')
+            return render(request, 'core/progress_form.html', {
+                'active_nav': 'progress',
+                'form_title': 'Log Session',
+                'submit_label': 'Save Log',
+                'log': None,
+                'clients': clients,
+                'exercises': exercises,
+                'values': {
+                    'client_id': client_id, 'exercise_id': exercise_id,
+                    'logged_date': logged_date,
+                    'sets_completed': sets_completed, 'reps_completed': reps_completed,
+                    'weight_kg': weight_kg, 'notes': notes,
+                },
+            })
+
+        client = get_object_or_404(Client, id=client_id, trainer=request.user)
+        exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
+
+        ProgressLog.objects.create(
+            client=client,
+            exercise=exercise,
+            logged_at=datetime.strptime(logged_date, "%Y-%m-%d"),
+            sets_completed=int(sets_completed),
+            reps_completed=int(reps_completed),
+            weight_kg=float(weight_kg or 0),
+            notes=notes,
+        )
+        messages.success(request, 'Progress logged.')
+        return redirect('progress_list')
+
+    return render(request, 'core/progress_form.html', {
+        'active_nav': 'progress',
+        'form_title': 'Log Session',
+        'submit_label': 'Save Log',
+        'log': None,
+        'clients': clients,
+        'exercises': exercises,
+        'values': {},
+    })
+
+
+@trainer_required
+def progress_edit(request, log_id):
+    log = get_object_or_404(ProgressLog, id=log_id, client__trainer=request.user)
+    clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
+    exercises = Exercise.objects.filter(
+        training_plan__trainer=request.user,
+    ).select_related('training_plan', 'training_plan__client').order_by('training_plan__client__name', 'name')
+
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id', '')
+        exercise_id = request.POST.get('exercise_id', '')
+        logged_date = request.POST.get('logged_date', '')
+        sets_completed = request.POST.get('sets_completed', '')
+        reps_completed = request.POST.get('reps_completed', '')
+        weight_kg = request.POST.get('weight_kg', '0')
+        notes = request.POST.get('notes', '').strip()
+
+        if not client_id or not exercise_id or not logged_date or not sets_completed or not reps_completed:
+            messages.error(request, 'Client, exercise, date, sets, and reps are required.')
+        else:
+            client = get_object_or_404(Client, id=client_id, trainer=request.user)
+            exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
+            log.client = client
+            log.exercise = exercise
+            log.logged_at = datetime.strptime(logged_date, "%Y-%m-%d")
+            log.sets_completed = int(sets_completed)
+            log.reps_completed = int(reps_completed)
+            log.weight_kg = float(weight_kg or 0)
+            log.notes = notes
+            log.save()
+            messages.success(request, 'Log updated.')
+            return redirect('progress_list')
+
+    return render(request, 'core/progress_form.html', {
+        'active_nav': 'progress',
+        'form_title': 'Edit Log',
+        'submit_label': 'Save Changes',
+        'log': log,
+        'clients': clients,
+        'exercises': exercises,
+        'values': {
+            'client_id': log.client_id,
+            'exercise_id': log.exercise_id,
+            'logged_date': log.logged_at.strftime('%Y-%m-%d'),
+            'sets_completed': log.sets_completed,
+            'reps_completed': log.reps_completed,
+            'weight_kg': log.weight_kg,
+            'notes': log.notes,
+        },
+    })
+
+
+@trainer_required
+def progress_delete(request, log_id):
+    log = get_object_or_404(ProgressLog, id=log_id, client__trainer=request.user)
+    if request.method == 'POST':
+        log.delete()
+        messages.success(request, 'Log removed.')
+    return redirect('progress_list')
 
 # Admin pages
 

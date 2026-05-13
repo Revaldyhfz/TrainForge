@@ -32,5 +32,10 @@ urlpatterns = [
     path('appointments/<int:appointment_id>/edit/', views.appointment_edit, name='appointment_edit'),
     path('appointments/<int:appointment_id>/cancel/', views.appointment_cancel, name='appointment_cancel'),
 
+    path('progress/', views.progress_list, name='progress_list'),
+    path('progress/new/', views.progress_create, name='progress_create'),
+    path('progress/<int:log_id>/edit/', views.progress_edit, name='progress_edit'),
+    path('progress/<int:log_id>/delete/', views.progress_delete, name='progress_delete'),
+    
     path('admin-overview/', views.admin_overview, name='admin_overview'),
 ]

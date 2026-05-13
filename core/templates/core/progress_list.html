@@ -1,0 +1,80 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}Progress — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title='Progress' subtitle='Track client performance over time.' action_url='/progress/new/' action_label='Log Session' %}
+
+<form method="get" class="flex gap-3 mb-6">
+  <select name="client" onchange="this.form.submit()"
+          class="border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:border-[#2D6A4F]">
+    <option value="">Select a client</option>
+    {% for c in clients %}
+      <option value="{{ c.id }}" {% if selected_client_id|stringformat:"s" == c.id|stringformat:"s" %}selected{% endif %}>
+        {{ c.name }}
+      </option>
+    {% endfor %}
+  </select>
+
+  {% if selected_client %}
+    <select name="exercise" onchange="this.form.submit()"
+            class="border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:border-[#2D6A4F]">
+      <option value="">All exercises</option>
+      {% for ex in exercises %}
+        <option value="{{ ex.id }}" {% if selected_exercise_id|stringformat:"s" == ex.id|stringformat:"s" %}selected{% endif %}>
+          {{ ex.name }} ({{ ex.training_plan.title }})
+        </option>
+      {% endfor %}
+    </select>
+  {% endif %}
+</form>
+
+{% if not selected_client %}
+  <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+    <p class="text-sm text-gray-500">Select a client above to see their progress.</p>
+  </div>
+{% elif not logs %}
+  <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+    <p class="text-sm text-gray-500 mb-4">No progress logged for this client yet.</p>
+    <a href="{% url 'progress_create' %}" class="inline-block bg-[#2D6A4F] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+      Log first session
+    </a>
+  </div>
+{% else %}
+  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <table class="w-full">
+      <thead>
+        <tr class="text-xs text-gray-400 border-b border-gray-100">
+          <th class="text-left px-6 py-3 font-medium">Date</th>
+          <th class="text-left px-6 py-3 font-medium">Exercise</th>
+          <th class="text-left px-6 py-3 font-medium">Sets</th>
+          <th class="text-left px-6 py-3 font-medium">Reps</th>
+          <th class="text-left px-6 py-3 font-medium">Weight</th>
+          <th class="text-left px-6 py-3 font-medium">Notes</th>
+          <th class="text-left px-6 py-3 font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for log in logs %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-3 text-sm">{{ log.logged_at|date:"M d, Y" }}</td>
+            <td class="px-6 py-3 text-sm">{{ log.exercise.name }}</td>
+            <td class="px-6 py-3 text-sm">{{ log.sets_completed }}</td>
+            <td class="px-6 py-3 text-sm">{{ log.reps_completed }}</td>
+            <td class="px-6 py-3 text-sm">{{ log.weight_kg }} kg</td>
+            <td class="px-6 py-3 text-sm text-gray-500">{{ log.notes|default:"—" }}</td>
+            <td class="px-6 py-3">
+              <div class="flex gap-2">
+                <a href="{% url 'progress_edit' log.id %}" class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">Edit</a>
+                <form method="post" action="{% url 'progress_delete' log.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}

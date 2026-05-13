@@ -1,0 +1,77 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}{{ form_title }} — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title=form_title %}
+
+<div class="max-w-2xl bg-white border border-gray-200 rounded-xl p-8">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Client</label>
+      <select name="client_id" required
+              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        <option value="">Select a client</option>
+        {% for c in clients %}
+          <option value="{{ c.id }}" {% if values.client_id|stringformat:"s" == c.id|stringformat:"s" %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Exercise</label>
+      <select name="exercise_id" required
+              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        <option value="">Select an exercise</option>
+        {% for ex in exercises %}
+          <option value="{{ ex.id }}" {% if values.exercise_id|stringformat:"s" == ex.id|stringformat:"s" %}selected{% endif %}>
+            {{ ex.training_plan.client.name }} — {{ ex.name }} ({{ ex.training_plan.title }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Date</label>
+      <input type="date" name="logged_date" value="{{ values.logged_date|default:'' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div class="grid grid-cols-3 gap-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">Sets</label>
+        <input type="number" name="sets_completed" min="1" placeholder="e.g. 3" value="{{ values.sets_completed|default:'' }}" required
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Reps</label>
+        <input type="number" name="reps_completed" min="1" placeholder="e.g. 10" value="{{ values.reps_completed|default:'' }}" required
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Weight (kg)</label>
+        <input type="number" name="weight_kg" min="0" step="0.5" placeholder="e.g. 50" value="{{ values.weight_kg|default:'' }}"
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">Notes</label>
+      <textarea name="notes" rows="3" placeholder="Optional notes..."
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.notes|default:'' }}</textarea>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+        {{ submit_label }}
+      </button>
+      <a href="{% url 'progress_list' %}" class="border border-gray-200 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}
