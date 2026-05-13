@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-# Roles and status enums used across multiple models.
+# Enums
 
 class UserRole(models.TextChoices):
     ADMIN = 'admin', 'Admin'
@@ -21,14 +21,22 @@ class ClientStatus(models.TextChoices):
     ACTIVE = 'active', 'Active'
     INACTIVE = 'inactive', 'Inactive'
 
+
 class ClientFitnessLevel(models.TextChoices):
     BEGINNER = 'beginner', 'Beginner'
     INTERMEDIATE = 'intermediate', 'Intermediate'
     ADVANCED = 'advanced', 'Advanced'
-    
+
+
 class TrainingPlanStatus(models.TextChoices):
     ACTIVE = 'active', 'Active'
     ARCHIVED = 'archived', 'Archived'
+
+
+class ExerciseType(models.TextChoices):
+    REPS = 'reps', 'Reps-based (sets × reps)'
+    DURATION = 'duration', 'Duration-based (sets × minutes)'
+    DISTANCE = 'distance', 'Distance-based (e.g., 5km run)'
 
 
 class AppointmentStatus(models.TextChoices):
@@ -61,6 +69,7 @@ class Subscription(models.Model):
         return f"{self.trainer.username} - {self.plan_type}"
 
 
+# Client represents a person the trainer is working with.
 class Client(models.Model):
     trainer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
     name = models.CharField(max_length=100)
@@ -79,26 +88,6 @@ class Client(models.Model):
 
     def __str__(self):
         return self.name
-
-# ClientAvailability stores a client's preferred training days/times.
-class ClientAvailability(models.Model):
-    DAY_CHOICES = [
-        ('monday', 'Monday'),
-        ('tuesday', 'Tuesday'),
-        ('wednesday', 'Wednesday'),
-        ('thursday', 'Thursday'),
-        ('friday', 'Friday'),
-        ('saturday', 'Saturday'),
-        ('sunday', 'Sunday'),
-    ]
-
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='availabilities')
-    day_of_week = models.CharField(max_length=10, choices=DAY_CHOICES)
-    preferred_time_start = models.TimeField()
-    preferred_time_end = models.TimeField()
-
-    def __str__(self):
-        return f"{self.client.name} - {self.day_of_week}"
 
 
 # TrainingPlan is a structured program assigned to a client.
@@ -121,9 +110,13 @@ class Exercise(models.Model):
     training_plan = models.ForeignKey(TrainingPlan, on_delete=models.CASCADE, related_name='exercises')
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    sets = models.PositiveIntegerField(default=0)
-    reps = models.PositiveIntegerField(default=0)
-    duration_seconds = models.PositiveIntegerField(default=0)
+    exercise_type = models.CharField(
+        max_length=15, choices=ExerciseType.choices, default=ExerciseType.REPS
+    )
+    sets = models.PositiveIntegerField(null=True, blank=True)
+    reps = models.PositiveIntegerField(null=True, blank=True)
+    duration_minutes = models.PositiveIntegerField(null=True, blank=True)
+    distance_km = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     order_index = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -133,6 +126,15 @@ class Exercise(models.Model):
 
     def __str__(self):
         return self.name
+
+    def summary(self):
+        if self.exercise_type == ExerciseType.REPS:
+            return f"{self.sets} sets × {self.reps} reps"
+        if self.exercise_type == ExerciseType.DURATION:
+            return f"{self.sets} sets × {self.duration_minutes} min"
+        if self.exercise_type == ExerciseType.DISTANCE:
+            return f"{self.distance_km} km"
+        return ""
 
 
 # Appointment is a scheduled session between a trainer and a client.
@@ -159,9 +161,11 @@ class ProgressLog(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='progress_logs')
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='progress_logs')
     logged_at = models.DateTimeField()
-    sets_completed = models.PositiveIntegerField(default=0)
-    reps_completed = models.PositiveIntegerField(default=0)
-    weight_kg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    sets_completed = models.PositiveIntegerField(null=True, blank=True)
+    reps_completed = models.PositiveIntegerField(null=True, blank=True)
+    weight_kg = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    duration_minutes = models.PositiveIntegerField(null=True, blank=True)
+    distance_km = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -170,3 +174,16 @@ class ProgressLog(models.Model):
 
     def __str__(self):
         return f"{self.client.name} - {self.exercise.name} - {self.logged_at}"
+
+    def summary(self):
+        ex_type = self.exercise.exercise_type
+        if ex_type == ExerciseType.REPS:
+            base = f"{self.sets_completed} × {self.reps_completed}"
+            if self.weight_kg:
+                base += f" @ {self.weight_kg} kg"
+            return base
+        if ex_type == ExerciseType.DURATION:
+            return f"{self.sets_completed} × {self.duration_minutes} min"
+        if ex_type == ExerciseType.DISTANCE:
+            return f"{self.distance_km} km"
+        return ""

@@ -1,12 +1,11 @@
 # core/admin.py
-# Register models with Django Admin for CRUD interface.
+# Django Admin registration for all models.
 
 from django.contrib import admin
 from .models import (
     Profile,
     Subscription,
     Client,
-    ClientAvailability,
     TrainingPlan,
     Exercise,
     Appointment,
@@ -40,17 +39,10 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'trainer', 'status', 'created_at']
-    list_filter = ['status']
+    list_display = ['name', 'email', 'trainer', 'fitness_level', 'status', 'created_at']
+    list_filter = ['status', 'fitness_level']
     search_fields = ['name', 'email', 'trainer__username']
     list_per_page = 20
-
-
-@admin.register(ClientAvailability)
-class ClientAvailabilityAdmin(admin.ModelAdmin):
-    list_display = ['client', 'day_of_week', 'preferred_time_start', 'preferred_time_end']
-    list_filter = ['day_of_week']
-    search_fields = ['client__name']
 
 
 # Inline exercises so they show up inside the TrainingPlan edit page.
@@ -70,7 +62,8 @@ class TrainingPlanAdmin(admin.ModelAdmin):
 
 @admin.register(Exercise)
 class ExerciseAdmin(admin.ModelAdmin):
-    list_display = ['name', 'training_plan', 'sets', 'reps', 'duration_seconds', 'order_index']
+    list_display = ['name', 'training_plan', 'exercise_type', 'sets', 'reps', 'duration_minutes', 'distance_km']
+    list_filter = ['exercise_type']
     search_fields = ['name', 'training_plan__title']
 
 
@@ -85,7 +78,7 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(ProgressLog)
 class ProgressLogAdmin(admin.ModelAdmin):
-    list_display = ['client', 'exercise', 'logged_at', 'sets_completed', 'reps_completed', 'weight_kg']
+    list_display = ['client', 'exercise', 'logged_at', 'sets_completed', 'reps_completed', 'weight_kg', 'duration_minutes', 'distance_km']
     list_filter = ['exercise']
     search_fields = ['client__name', 'exercise__name']
     date_hierarchy = 'logged_at'
