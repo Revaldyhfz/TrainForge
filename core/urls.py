@@ -26,6 +26,11 @@ urlpatterns = [
     path('plans/<int:plan_id>/exercises/new/', views.exercise_create, name='exercise_create'),
     path('exercises/<int:exercise_id>/edit/', views.exercise_edit, name='exercise_edit'),
     path('exercises/<int:exercise_id>/delete/', views.exercise_delete, name='exercise_delete'),
+    
+    path('appointments/', views.appointments_list, name='appointments_list'),
+    path('appointments/new/', views.appointment_create, name='appointment_create'),
+    path('appointments/<int:appointment_id>/edit/', views.appointment_edit, name='appointment_edit'),
+    path('appointments/<int:appointment_id>/cancel/', views.appointment_cancel, name='appointment_cancel'),
 
     path('admin-overview/', views.admin_overview, name='admin_overview'),
 ]

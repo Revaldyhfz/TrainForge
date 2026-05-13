@@ -15,6 +15,10 @@
        class="text-sm px-3 py-2 rounded-md {% if active == 'plans' %}bg-[#D8F3DC] text-[#2D6A4F]{% else %}text-gray-500 hover:bg-gray-50{% endif %}">
       Training Plans
     </a>
+    <a href="{% url 'appointments_list' %}"
+       class="text-sm px-3 py-2 rounded-md {% if active == 'appointments' %}bg-[#D8F3DC] text-[#2D6A4F]{% else %}text-gray-500 hover:bg-gray-50{% endif %}">
+      Appointments
+    </a>
   </nav>
 
   

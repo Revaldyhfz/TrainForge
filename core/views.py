@@ -9,6 +9,13 @@ from .models import Profile, UserRole, Client, ClientStatus
 from .permissions import trainer_required, admin_required, get_user_role
 from .models import Profile, UserRole, Client, ClientStatus, TrainingPlan, TrainingPlanStatus, Exercise
 
+from datetime import datetime, date
+from .models import (
+    Profile, UserRole, Client, ClientStatus,
+    TrainingPlan, TrainingPlanStatus, Exercise,
+    Appointment, AppointmentStatus,
+)
+from .calendar_helper import build_month_grid, get_prev_next_month
 
 # Public pages and auth
 
@@ -412,6 +419,145 @@ def exercise_delete(request, exercise_id):
         messages.success(request, 'Exercise removed.')
 
     return redirect('plan_edit', plan_id=plan_id)
+
+
+# Appointments
+
+@trainer_required
+def appointments_list(request):
+    today = date.today()
+    try:
+        year = int(request.GET.get('year', today.year))
+        month = int(request.GET.get('month', today.month))
+    except ValueError:
+        year, month = today.year, today.month
+
+    appointments = Appointment.objects.filter(
+        trainer=request.user,
+        scheduled_at__year=year,
+        scheduled_at__month=month,
+    ).order_by('scheduled_at')
+
+    upcoming = Appointment.objects.filter(
+        trainer=request.user,
+        scheduled_at__gte=datetime.now(),
+        status=AppointmentStatus.SCHEDULED,
+    ).order_by('scheduled_at')[:5]
+
+    weeks = build_month_grid(year, month, appointments)
+    (prev_year, prev_month), (next_year, next_month) = get_prev_next_month(year, month)
+
+    return render(request, 'core/appointments_list.html', {
+        'active_nav': 'appointments',
+        'weeks': weeks,
+        'upcoming': upcoming,
+        'year': year,
+        'month': month,
+        'month_name': date(year, month, 1).strftime('%B'),
+        'prev_year': prev_year,
+        'prev_month': prev_month,
+        'next_year': next_year,
+        'next_month': next_month,
+    })
+
+
+@trainer_required
+def appointment_create(request):
+    clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
+
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id', '')
+        scheduled_date = request.POST.get('scheduled_date', '')
+        scheduled_time = request.POST.get('scheduled_time', '')
+        duration_minutes = request.POST.get('duration_minutes', '60')
+        notes = request.POST.get('notes', '').strip()
+
+        if not client_id or not scheduled_date or not scheduled_time:
+            messages.error(request, 'Client, date, and time are required.')
+            return render(request, 'core/appointment_form.html', {
+                'active_nav': 'appointments',
+                'form_title': 'Book Session',
+                'submit_label': 'Book Session',
+                'appointment': None,
+                'clients': clients,
+                'values': {
+                    'client_id': client_id, 'scheduled_date': scheduled_date,
+                    'scheduled_time': scheduled_time, 'duration_minutes': duration_minutes,
+                    'notes': notes,
+                },
+            })
+
+        client = get_object_or_404(Client, id=client_id, trainer=request.user)
+        scheduled_at = datetime.strptime(f"{scheduled_date} {scheduled_time}", "%Y-%m-%d %H:%M")
+
+        Appointment.objects.create(
+            trainer=request.user,
+            client=client,
+            scheduled_at=scheduled_at,
+            duration_minutes=int(duration_minutes or 60),
+            notes=notes,
+        )
+        messages.success(request, 'Session booked.')
+        return redirect('appointments_list')
+
+    return render(request, 'core/appointment_form.html', {
+        'active_nav': 'appointments',
+        'form_title': 'Book Session',
+        'submit_label': 'Book Session',
+        'appointment': None,
+        'clients': clients,
+        'values': {'duration_minutes': 60},
+    })
+
+
+@trainer_required
+def appointment_edit(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id, trainer=request.user)
+    clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
+
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id', '')
+        scheduled_date = request.POST.get('scheduled_date', '')
+        scheduled_time = request.POST.get('scheduled_time', '')
+        duration_minutes = request.POST.get('duration_minutes', '60')
+        notes = request.POST.get('notes', '').strip()
+
+        if not client_id or not scheduled_date or not scheduled_time:
+            messages.error(request, 'Client, date, and time are required.')
+        else:
+            client = get_object_or_404(Client, id=client_id, trainer=request.user)
+            appointment.client = client
+            appointment.scheduled_at = datetime.strptime(f"{scheduled_date} {scheduled_time}", "%Y-%m-%d %H:%M")
+            appointment.duration_minutes = int(duration_minutes or 60)
+            appointment.notes = notes
+            appointment.save()
+            messages.success(request, 'Session updated.')
+            return redirect('appointments_list')
+
+    return render(request, 'core/appointment_form.html', {
+        'active_nav': 'appointments',
+        'form_title': 'Edit Session',
+        'submit_label': 'Save Changes',
+        'appointment': appointment,
+        'clients': clients,
+        'values': {
+            'client_id': appointment.client_id,
+            'scheduled_date': appointment.scheduled_at.strftime('%Y-%m-%d'),
+            'scheduled_time': appointment.scheduled_at.strftime('%H:%M'),
+            'duration_minutes': appointment.duration_minutes,
+            'notes': appointment.notes,
+        },
+    })
+
+
+@trainer_required
+def appointment_cancel(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id, trainer=request.user)
+    if request.method == 'POST':
+        appointment.status = AppointmentStatus.CANCELLED
+        appointment.save()
+        messages.success(request, 'Session cancelled.')
+    return redirect('appointments_list')
 
 # Admin pages
 
