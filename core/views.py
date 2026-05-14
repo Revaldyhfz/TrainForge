@@ -1,6 +1,3 @@
-# core/views.py
-# View functions for public pages, auth, and clients.
-
 from datetime import datetime, date, timedelta
 import json
 
@@ -68,7 +65,7 @@ def register(request):
         user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, role=UserRole.TRAINER)
 
-        # Give every new trainer a free 1-year subscription by default.
+        # new trainers get a free 1-year subscription
         Subscription.objects.create(
             trainer=user,
             plan_type=SubscriptionPlanType.FREE,
@@ -749,8 +746,7 @@ def body_weight_delete(request, measurement_id):
 def progress_create(request):
     clients = Client.objects.filter(trainer=request.user, status=ClientStatus.ACTIVE).order_by('name')
 
-    # Build a flat list of (exercise_id, "Plan Title — Exercise Name") so the form
-    # can show ONE dropdown of exercises, scoped to this trainer.
+    # flat list so the form can show one dropdown scoped to this trainer
     exercises = Exercise.objects.filter(
         training_plan__trainer=request.user,
     ).select_related('training_plan', 'training_plan__client').order_by('training_plan__client__name', 'name')
@@ -907,7 +903,7 @@ def ai_questionnaire(request, plan_id):
 def ai_chat(request, plan_id):
     plan = get_object_or_404(TrainingPlan, id=plan_id, trainer=request.user)
 
-    # Session guard — must have completed the questionnaire first.
+    # require completed questionnaire
     if request.session.get('ai_plan_id') != plan.id or 'ai_questionnaire' not in request.session:
         return redirect('ai_questionnaire', plan_id=plan.id)
 
@@ -926,7 +922,7 @@ def ai_chat(request, plan_id):
             duration = _int_or_none(ex.get('duration_minutes'))
             distance = _float_or_none(ex.get('distance_km'))
 
-            # Validate: at least one type-relevant field must be filled.
+            # skip rows missing the fields their type needs
             if ex_type == 'reps' and not (sets and reps):
                 continue
             if ex_type == 'duration' and not (sets and duration):

@@ -1,22 +1,18 @@
-# core/calendar_helper.py
-# Builds a month grid for the appointments calendar.
-
 import calendar
 from datetime import date
 
 
 def build_month_grid(year, month, appointments):
-    # Group appointments by date so the template can quickly look up each day.
+    # group by date so the template can index per day
     appts_by_date = {}
     for appt in appointments:
         day = appt.scheduled_at.date()
         appts_by_date.setdefault(day, []).append(appt)
 
-    # calendar.monthcalendar returns a list of weeks, each week a list of 7 day numbers (0 = padding).
+    # monthdayscalendar returns weeks of 7 day numbers, 0 for padding days outside the month
     cal = calendar.Calendar(firstweekday=0)  # 0 = Monday
     weeks_raw = cal.monthdayscalendar(year, month)
 
-    # Convert each raw day number into a dict with extra context for the template.
     weeks = []
     today = date.today()
     for week in weeks_raw:

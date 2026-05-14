@@ -1,9 +1,8 @@
-# core/ics_service.py
-# Generate iCalendar (.ics) files for appointments.
-
 from datetime import timedelta
 from icalendar import Calendar, Event
 import uuid
+
+# ref: icalendar Python library (RFC 5545) — https://icalendar.readthedocs.io/
 
 
 def build_appointment_ics(appointment):

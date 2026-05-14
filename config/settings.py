@@ -35,24 +35,20 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# Production-only security settings. DEBUG=False means we're deployed.
+# ref: Django deployment checklist — https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# production security flags — only applied when not in debug mode
 if not DEBUG:
-    # Force HTTPS — redirect any http:// requests to https://
     SECURE_SSL_REDIRECT = True
 
-    # HSTS — tell browsers to remember "always use HTTPS for this domain" for 1 year
+    # one year HSTS
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-    # Send cookies only over HTTPS, never over plain HTTP
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-    # Prevent the browser from MIME-sniffing responses
     SECURE_CONTENT_TYPE_NOSNIFF = True
-
-    # Prevent the site from being embedded in iframes (clickjacking protection)
     X_FRAME_OPTIONS = 'DENY'
 
 RESEND_API_KEY = os.getenv('RESEND_API_KEY')
@@ -73,6 +69,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # ref: WhiteNoise for serving static files — https://whitenoise.readthedocs.io/
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -104,8 +101,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# ref: dj-database-url for parsing DATABASE_URL — https://pypi.org/project/dj-database-url/
 
-# Use DATABASE_URL in production (Render), fall back to local Postgres
+# use DATABASE_URL in production (Render), fall back to local Postgres
 if os.getenv('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(

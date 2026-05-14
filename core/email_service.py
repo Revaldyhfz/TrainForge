@@ -1,10 +1,9 @@
-# core/email_service.py
-# Send emails via Resend.
-
 import resend
 from django.conf import settings
 from django.template.loader import render_to_string
 from .ics_service import build_appointment_ics
+
+# ref: Resend email API — https://resend.com/docs
 
 
 def send_training_plan_email(plan, recipient_email):

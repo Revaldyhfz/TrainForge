@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build script for Render deployment.
+# build script for Render deployment
+# ref: Render Django deployment guide — https://render.com/docs/deploy-django
 set -o errexit
 
 pip install -r requirements.txt

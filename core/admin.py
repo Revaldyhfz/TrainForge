@@ -1,6 +1,3 @@
-# core/admin.py
-# Django Admin registration for all models.
-
 from django.contrib import admin
 from .models import (
     Profile,
@@ -45,7 +42,7 @@ class ClientAdmin(admin.ModelAdmin):
     list_per_page = 20
 
 
-# Inline exercises so they show up inside the TrainingPlan edit page.
+# show exercises inline on the training plan page
 class ExerciseInline(admin.TabularInline):
     model = Exercise
     extra = 1

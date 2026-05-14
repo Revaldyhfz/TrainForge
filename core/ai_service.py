@@ -1,9 +1,8 @@
-# core/ai_service.py
-# Single entry point for AI training plan generation.
-
 import json
 from django.conf import settings
 from openai import OpenAI
+
+# ref: OpenAI Python SDK — https://github.com/openai/openai-python
 
 
 SYSTEM_PROMPT = """You are an expert personal training assistant helping a certified trainer design exercise plans for their client.

@@ -1,6 +1,3 @@
-# core/permissions.py
-# Helpers and decorators for role-based access control.
-
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages

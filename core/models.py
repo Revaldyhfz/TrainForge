@@ -1,11 +1,8 @@
-# core/models.py
-# Domain models for TrainForge.
-
 from django.db import models
 from django.contrib.auth.models import User
 
 
-# Enums
+# enums
 
 class UserRole(models.TextChoices):
     ADMIN = 'admin', 'Admin'
@@ -49,7 +46,7 @@ class SubscriptionPlanType(models.TextChoices):
     BASIC = 'basic', 'Basic'
     PRO = 'pro', 'Pro'
 
-# Profile extends Django's built-in User with role information.
+# extends the built-in user with a role
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=10, choices=UserRole.choices, default=UserRole.TRAINER)
@@ -59,7 +56,7 @@ class Profile(models.Model):
         return f"{self.user.username} ({self.role})"
 
 
-# Subscription tracks which trainers have paid access and for how long.
+# trainer plan and access window
 class Subscription(models.Model):
     trainer = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
     plan_type = models.CharField(
@@ -75,7 +72,7 @@ class Subscription(models.Model):
         return f"{self.trainer.username} - {self.plan_type}"
 
 
-# Client represents a person the trainer is working with.
+# a person a trainer is working with
 class Client(models.Model):
     trainer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
     name = models.CharField(max_length=100)
@@ -96,7 +93,7 @@ class Client(models.Model):
         return self.name
 
 
-# TrainingPlan is a structured program assigned to a client.
+# a programme assigned to a client
 class TrainingPlan(models.Model):
     trainer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='training_plans')
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='training_plans')
@@ -111,7 +108,7 @@ class TrainingPlan(models.Model):
         return f"{self.title} ({self.client.name})"
 
 
-# Exercise is one entry inside a training plan.
+# one entry inside a training plan
 class Exercise(models.Model):
     training_plan = models.ForeignKey(TrainingPlan, on_delete=models.CASCADE, related_name='exercises')
     name = models.CharField(max_length=100)
@@ -143,7 +140,7 @@ class Exercise(models.Model):
         return ""
 
 
-# Appointment is a scheduled session between a trainer and a client.
+# a scheduled session between trainer and client
 class Appointment(models.Model):
     trainer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='appointments')
@@ -162,7 +159,7 @@ class Appointment(models.Model):
         return f"{self.client.name} - {self.scheduled_at}"
 
 
-# ProgressLog records performance for an exercise on a given date.
+# performance recorded for one exercise on one date
 class ProgressLog(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='progress_logs')
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='progress_logs')
@@ -194,7 +191,7 @@ class ProgressLog(models.Model):
             return f"{self.distance_km} km"
         return ""
     
-# BodyMeasurement records a client's body weight at a point in time.
+# client body weight at a point in time
 class BodyMeasurement(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='body_measurements')
     weight_kg = models.DecimalField(max_digits=5, decimal_places=1)
