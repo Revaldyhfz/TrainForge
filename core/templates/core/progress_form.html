@@ -29,6 +29,7 @@
         {% for ex in exercises %}
           <option value="{{ ex.id }}"
                   data-client-id="{{ ex.training_plan.client_id }}"
+                  data-type="{{ ex.exercise_type }}"
                   {% if values.exercise_id|stringformat:"s" == ex.id|stringformat:"s" %}selected{% endif %}>
             {{ ex.name }} ({{ ex.training_plan.title }})
           </option>
@@ -42,22 +43,41 @@
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
-    <div class="grid grid-cols-3 gap-3">
+    <div id="reps-fields" class="grid grid-cols-3 gap-3">
       <div>
         <label for="id_sets_completed" class="block text-sm font-medium mb-1">Sets</label>
-        <input type="number" name="sets_completed" id="id_sets_completed" min="1" placeholder="e.g. 3" value="{{ values.sets_completed|default:'' }}" required
+        <input type="number" name="sets_completed" id="id_sets_completed" min="1" placeholder="e.g. 3" value="{{ values.sets_completed|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
       <div>
         <label for="id_reps_completed" class="block text-sm font-medium mb-1">Reps</label>
-        <input type="number" name="reps_completed" id="id_reps_completed" min="1" placeholder="e.g. 10" value="{{ values.reps_completed|default:'' }}" required
+        <input type="number" name="reps_completed" id="id_reps_completed" min="1" placeholder="e.g. 10" value="{{ values.reps_completed|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
       <div>
-        <label for="id_weight_kg" class="block text-sm font-medium mb-1">Weight (kg)</label>
+        <label for="id_weight_kg" class="block text-sm font-medium mb-1">Weight (kg, optional)</label>
         <input type="number" name="weight_kg" id="id_weight_kg" min="0" step="0.5" placeholder="e.g. 50" value="{{ values.weight_kg|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
+    </div>
+
+    <div id="duration-fields" class="grid grid-cols-2 gap-3 hidden">
+      <div>
+        <label for="id_sets_completed_dur" class="block text-sm font-medium mb-1">Sets</label>
+        <input type="number" name="sets_completed_dur" id="id_sets_completed_dur" min="1" placeholder="e.g. 3" value="{{ values.sets_completed|default:'' }}"
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+      <div>
+        <label for="id_duration_minutes" class="block text-sm font-medium mb-1">Duration (min)</label>
+        <input type="number" name="duration_minutes" id="id_duration_minutes" min="1" placeholder="e.g. 30" value="{{ values.duration_minutes|default:'' }}"
+               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+      </div>
+    </div>
+
+    <div id="distance-fields" class="hidden">
+      <label for="id_distance_km" class="block text-sm font-medium mb-1">Distance (km)</label>
+      <input type="number" name="distance_km" id="id_distance_km" min="0" step="0.1" placeholder="e.g. 5" value="{{ values.distance_km|default:'' }}"
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
     <div>
@@ -78,9 +98,12 @@
 </div>
 
 <script>
-  // When the trainer picks a client, hide exercises that don't belong to them.
+  // when the trainer picks a client, hide exercises that don't belong to them
   const clientSelect = document.getElementById('client-select');
   const exerciseSelect = document.getElementById('exercise-select');
+  const repsFields = document.getElementById('reps-fields');
+  const durationFields = document.getElementById('duration-fields');
+  const distanceFields = document.getElementById('distance-fields');
 
   function filterExercises() {
     const clientId = clientSelect.value;
@@ -94,7 +117,17 @@
     }
   }
 
+  function updateFields() {
+    const selected = exerciseSelect.selectedOptions[0];
+    const type = selected ? selected.dataset.type : '';
+    repsFields.classList.toggle('hidden', type !== 'reps');
+    durationFields.classList.toggle('hidden', type !== 'duration');
+    distanceFields.classList.toggle('hidden', type !== 'distance');
+  }
+
   clientSelect.addEventListener('change', filterExercises);
+  exerciseSelect.addEventListener('change', updateFields);
   filterExercises();
+  updateFields();
 </script>
 {% endblock %}
