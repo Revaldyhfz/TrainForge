@@ -1,0 +1,81 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}AI Suggestions — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title='AI Suggestions' subtitle=plan.title %}
+
+<div class="max-w-3xl space-y-6">
+
+  {% if ai_message %}
+    <div class="bg-[#F0FDF4] border border-[#D8F3DC] rounded-xl p-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-xs bg-[#2D6A4F] text-white px-2 py-0.5 rounded">AI Assistant</span>
+      </div>
+      <p class="text-sm text-gray-700 leading-relaxed">{{ ai_message }}</p>
+    </div>
+  {% endif %}
+
+  {% if ai_exercises %}
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <h2 class="font-medium mb-4">Proposed Exercises</h2>
+      <div class="divide-y divide-gray-100">
+        {% for ex in ai_exercises %}
+          <div class="py-3">
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-sm font-medium">{{ ex.name }}</p>
+              <p class="text-xs text-gray-500">
+                {% if ex.exercise_type == 'reps' %}
+                  {{ ex.sets }} sets × {{ ex.reps }} reps
+                {% elif ex.exercise_type == 'duration' %}
+                  {{ ex.sets }} sets × {{ ex.duration_minutes }} min
+                {% elif ex.exercise_type == 'distance' %}
+                  {{ ex.distance_km }} km
+                {% else %}
+                  {{ ex.sets }} sets × {{ ex.reps }} reps
+                {% endif %}
+              </p>
+            </div>
+            {% if ex.description %}
+              <p class="text-xs text-gray-500">{{ ex.description }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <h2 class="font-medium mb-3">Refine or Save</h2>
+      <p class="text-sm text-gray-500 mb-4">
+        Want changes? Describe what to adjust and click Refine. Happy with the result? Click Complete to add these to your plan.
+      </p>
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <textarea name="feedback" rows="2"
+                  placeholder="e.g. Less volume, focus on upper body, avoid barbell exercises"
+                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]"></textarea>
+
+        <div class="flex gap-3">
+          <button type="submit" name="action" value="refine"
+                  class="border border-gray-200 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+            Refine
+          </button>
+          <button type="submit" name="action" value="complete"
+                  class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+            Complete — Add to Plan
+          </button>
+          <a href="{% url 'plan_edit' plan.id %}"
+             class="ml-auto text-sm text-gray-500 hover:text-gray-700 py-2">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  {% else %}
+    <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+      <p class="text-sm text-gray-500">Generating suggestions…</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

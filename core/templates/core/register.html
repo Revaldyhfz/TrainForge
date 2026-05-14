@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% block title %}Register — TrainForge{% endblock %}
+
+{% block content %}
+{% include 'core/includes/public_nav.html' %}
+
+<div class="max-w-md mx-auto px-6 py-12">
+  <div class="bg-white border border-gray-200 rounded-xl p-8">
+    <h1 class="serif text-2xl mb-2">Create an account</h1>
+    <p class="text-sm text-gray-500 mb-6">Start managing your clients today.</p>
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% include 'core/includes/form_field.html' with label='Username' name='username' %}
+      {% include 'core/includes/form_field.html' with label='Email' name='email' type='email' %}
+      {% include 'core/includes/form_field.html' with label='Password' name='password' type='password' %}
+      {% include 'core/includes/form_field.html' with label='Confirm Password' name='password_confirm' type='password' %}
+
+      <button type="submit" class="w-full bg-[#2D6A4F] text-white py-2.5 rounded-md text-sm font-medium hover:bg-[#245840]">
+        Create account
+      </button>
+    </form>
+
+    <p class="text-sm text-gray-500 mt-4 text-center">
+      Already have an account?
+      <a href="{% url 'login' %}" class="text-[#2D6A4F] hover:underline">Sign in</a>
+    </p>
+  </div>
+</div>
+<footer class="max-w-md mx-auto px-6 py-8 mt-8 border-t border-gray-200">
+  <p class="text-xs text-gray-400 text-center">INFS3202 · University of Queensland · 2026</p>
+</footer>
+{% endblock %}

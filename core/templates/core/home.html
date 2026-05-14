@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+{% block title %}TrainForge — Personal Training Management{% endblock %}
+
+{% block content %}
+{% include 'core/includes/public_nav.html' %}
+
+<section id="main-content" class="max-w-5xl mx-auto px-6 pt-16 pb-20">
+  <p class="text-sm text-[#2D6A4F] font-medium mb-3">Personal Training Management</p>
+  <h1 class="serif text-4xl md:text-5xl leading-tight mb-5">
+    Manage your clients.<br>Build better programs.
+  </h1>
+  <p class="text-gray-500 text-lg mb-8 max-w-2xl">
+    TrainForge gives personal trainers one place to manage clients, create training plans,
+    schedule sessions, and track progress over time.
+  </p>
+  <a href="{% url 'register' %}" class="inline-block bg-[#2D6A4F] text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-[#245840]">
+    Start for free
+  </a>
+</section>
+
+<section id="features" class="max-w-5xl mx-auto px-6 pb-20">
+  <div class="border-t border-gray-200 pt-16">
+    <h2 class="serif text-3xl mb-12">Everything you need</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <div>
+        <h3 class="font-medium mb-2">Client Management</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Store client details, goals, and availability in one place.</p>
+      </div>
+
+      <div>
+        <h3 class="font-medium mb-2">Training Plans</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Build personalised programs with exercises, sets, and reps.</p>
+      </div>
+
+      <div>
+        <h3 class="font-medium mb-2">Appointment Scheduling</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Book sessions and see them on a calendar view.</p>
+      </div>
+
+      <div>
+        <h3 class="font-medium mb-2">Progress Tracking</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Log and review client performance per exercise over time.</p>
+      </div>
+
+      <div>
+        <h3 class="font-medium mb-2">AI-Assisted Plans</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Generate training plan suggestions based on client goals and history.</p>
+      </div>
+
+      <div>
+        <h3 class="font-medium mb-2">Secure by Default</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Role-based access, hashed passwords, and CSRF protection.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="max-w-5xl mx-auto px-6 py-8 border-t border-gray-200">
+  <p class="text-sm text-gray-400">TrainForge. Built for personal trainers.</p>
+</footer>
+{% endblock %}

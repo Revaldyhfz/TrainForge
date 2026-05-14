@@ -1,0 +1,18 @@
+{# Top bar for admin pages. #}
+<header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-20">
+  <div class="md:hidden">
+    <span class="text-base font-semibold">TrainForge</span>
+  </div>
+  <div class="ml-auto flex items-center gap-4">
+    <div class="text-right">
+      <p class="text-sm font-medium">{{ user.username }}</p>
+      <p class="text-xs text-gray-400">Administrator</p>
+    </div>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="text-sm border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50">
+        Logout
+      </button>
+    </form>
+  </div>
+</header>

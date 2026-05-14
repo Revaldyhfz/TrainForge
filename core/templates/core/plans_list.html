@@ -1,0 +1,71 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}Training Plans — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title='Training Plans' subtitle='Create and manage programs.' action_url='/plans/new/' action_label='New Plan' %}
+
+{% if plans %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for plan in plans %}
+      <div class="bg-white border border-gray-200 rounded-xl p-6">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <h3 class="font-medium">
+              <a href="{% url 'plan_detail' plan.id %}" class="hover:text-[#2D6A4F]">{{ plan.title }}</a>
+            </h3>
+            <p class="text-sm text-gray-400 mt-0.5">{{ plan.client.name }}</p>
+          </div>
+          <div class="flex gap-2">
+            {% if plan.generated_by_ai %}
+              <span class="text-xs bg-[#F0FDF4] text-[#2D6A4F] border border-[#D8F3DC] px-2 py-1 rounded-md">✨ AI</span>
+            {% endif %}
+            {% if plan.status == 'active' %}
+              <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md">Active</span>
+            {% else %}
+              <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md">Archived</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if plan.description %}
+          <p class="text-sm text-gray-500 mb-4">{{ plan.description }}</p>
+        {% endif %}
+
+        <p class="text-xs text-gray-400 mb-4">{{ plan.exercises.count }} exercise{{ plan.exercises.count|pluralize }}</p>
+
+        <div class="flex gap-2">
+          <a href="{% url 'plan_detail' plan.id %}" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50">
+            View
+          </a>
+          <a href="{% url 'plan_edit' plan.id %}" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50">
+            Edit
+          </a>
+          {% if plan.status == 'active' %}
+            <form method="post" action="{% url 'plan_archive' plan.id %}"
+      onsubmit="return confirm('Archive {{ plan.title|escapejs }}? You can restore it later.');">
+  {% csrf_token %}
+  <button type="submit" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md text-red-500 hover:bg-red-50">
+    Archive
+  </button>
+</form>
+          {% else %}
+            <form method="post" action="{% url 'plan_restore' plan.id %}">
+              {% csrf_token %}
+              <button type="submit" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50">
+                Restore
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+    <p class="text-sm text-gray-500 mb-4">You don't have any training plans yet.</p>
+    <a href="{% url 'plan_create' %}" class="inline-block bg-[#2D6A4F] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+      Create your first plan
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{# Sidebar for admin pages. Pass `active` to highlight current page. #}
+<aside id="sidebar"
+       class="w-56 bg-[#F0FDF4] border-r border-[#D8F3DC] fixed h-full p-4 flex flex-col z-30
+              transition-transform -translate-x-full md:translate-x-0">
+  <a href="{% url 'admin_overview' %}" class="text-base font-semibold mb-8 px-3 text-[#2D6A4F]">
+    TrainForge
+  </a>
+
+  <nav class="flex flex-col gap-1 flex-1">
+    <a href="{% url 'admin_overview' %}"
+       class="text-sm px-3 py-2 rounded-md transition-colors {% if active == 'overview' %}bg-[#2D6A4F] text-white{% else %}text-gray-600 hover:bg-white{% endif %}">
+      Overview
+    </a>
+    <a href="/admin/core/subscription/" target="_blank"
+       class="text-sm px-3 py-2 rounded-md text-gray-600 hover:bg-white transition-colors">
+      Manage Subscriptions ↗
+    </a>
+    <a href="/admin/auth/user/" target="_blank"
+       class="text-sm px-3 py-2 rounded-md text-gray-600 hover:bg-white transition-colors">
+      Manage Users ↗
+    </a>
+  </nav>
+</aside>

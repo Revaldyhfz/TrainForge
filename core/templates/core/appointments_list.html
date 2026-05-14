@@ -1,0 +1,79 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}Appointments — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title='Appointments' subtitle='Schedule and manage sessions.' action_url='/appointments/new/' action_label='Book Session' %}
+
+<div class="grid grid-cols-1 md:grid-cols-10 gap-6">
+
+  <aside class="md:col-span-3 md:border-r md:border-gray-200 md:pr-6">
+    <h2 class="font-medium mb-4">Upcoming Sessions</h2>
+    {% if upcoming %}
+      <div class="divide-y divide-gray-100">
+        {% for appt in upcoming %}
+          <a href="{% url 'appointment_edit' appt.id %}" class="flex items-start gap-3 py-3 hover:bg-gray-50 px-2 -mx-2 rounded-md">
+            <div class="text-center w-10 flex-shrink-0">
+              <p class="text-xs text-gray-400 uppercase">{{ appt.scheduled_at|date:"M" }}</p>
+              <p class="text-base font-semibold">{{ appt.scheduled_at|date:"d" }}</p>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium truncate">{{ appt.client.name }}</p>
+              <p class="text-xs text-gray-400">{{ appt.scheduled_at|date:"H:i" }} — {{ appt.duration_minutes }} min</p>
+              {% if appt.notes %}
+                <p class="text-xs text-gray-500 mt-0.5 truncate">{{ appt.notes }}</p>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-sm text-gray-500">No upcoming sessions.</p>
+    {% endif %}
+  </aside>
+
+  <section class="md:col-span-7">
+    <div class="bg-white border border-gray-200 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-medium">{{ month_name }} {{ year }}</h2>
+        <div class="flex gap-2">
+          <a href="?year={{ prev_year }}&month={{ prev_month }}" class="border border-gray-200 px-3 py-1 rounded-md text-sm hover:bg-gray-50">Prev</a>
+          <a href="?year={{ next_year }}&month={{ next_month }}" class="border border-gray-200 px-3 py-1 rounded-md text-sm hover:bg-gray-50">Next</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 gap-1 mb-2">
+        <div class="text-xs text-gray-400 text-center py-1">Mon</div>
+        <div class="text-xs text-gray-400 text-center py-1">Tue</div>
+        <div class="text-xs text-gray-400 text-center py-1">Wed</div>
+        <div class="text-xs text-gray-400 text-center py-1">Thu</div>
+        <div class="text-xs text-gray-400 text-center py-1">Fri</div>
+        <div class="text-xs text-gray-400 text-center py-1">Sat</div>
+        <div class="text-xs text-gray-400 text-center py-1">Sun</div>
+      </div>
+
+      <div class="grid grid-cols-7 gap-1">
+        {% for week in weeks %}
+          {% for cell in week %}
+            {% if cell %}
+              <div class="p-2 rounded-md min-h-[70px] {% if cell.is_today %}bg-[#F0FDF4] border border-[#2D6A4F]{% endif %}">
+                <span class="text-xs {% if cell.is_today %}font-medium{% else %}text-gray-400{% endif %} block mb-1">{{ cell.day }}</span>
+                {% for appt in cell.appointments %}
+                  <a href="{% url 'appointment_edit' appt.id %}"
+                     title="{{ appt.client.name }} at {{ appt.scheduled_at|date:'H:i' }}{% if appt.notes %} — {{ appt.notes }}{% endif %}"
+                     class="text-xs block truncate rounded px-1 py-0.5 mb-0.5
+                            {% if appt.status == 'cancelled' %}bg-gray-100 text-gray-400 line-through{% else %}bg-[#D8F3DC] text-[#2D6A4F]{% endif %}">
+                    {{ appt.scheduled_at|date:"H:i" }} {{ appt.client.name }}
+                  </a>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="min-h-[70px]"></div>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

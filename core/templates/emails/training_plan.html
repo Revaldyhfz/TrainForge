@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Training Plan</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1C1C1C;">
+
+  <div style="border-bottom: 2px solid #2D6A4F; padding-bottom: 16px; margin-bottom: 24px;">
+    <h1 style="color: #2D6A4F; margin: 0;">TrainForge</h1>
+  </div>
+
+  <h2 style="font-size: 22px; margin-bottom: 8px;">Hi {{ client.name }},</h2>
+  <p style="color: #555; line-height: 1.6;">
+    {{ trainer.username }} has prepared a training plan for you. Details below.
+  </p>
+
+  <div style="background: #F0FDF4; border: 1px solid #D8F3DC; border-radius: 8px; padding: 20px; margin: 24px 0;">
+    <h3 style="margin-top: 0; color: #2D6A4F;">{{ plan.title }}</h3>
+    {% if plan.description %}
+      <p style="color: #555; line-height: 1.6;">{{ plan.description }}</p>
+    {% endif %}
+  </div>
+
+  <h3 style="margin-top: 32px;">Exercises</h3>
+  <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+    <thead>
+      <tr style="background: #f5f5f5;">
+        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">#</th>
+        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Exercise</th>
+        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Sets</th>
+        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Reps</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ex in exercises %}
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">{{ forloop.counter }}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">
+            <strong>{{ ex.name }}</strong>
+            {% if ex.description %}
+              <br><span style="color: #888; font-size: 13px;">{{ ex.description }}</span>
+            {% endif %}
+          </td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">{{ ex.sets }}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">{{ ex.reps }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="margin-top: 32px; color: #555; line-height: 1.6;">
+    See you at your next session.
+  </p>
+
+  <p style="margin-top: 32px; color: #888; font-size: 13px;">
+    — {{ trainer.username }}, your trainer
+  </p>
+
+  <div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid #eee; color: #aaa; font-size: 12px;">
+    <p>Sent via TrainForge</p>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Admin Overview — TrainForge{% endblock %}
+
+{% block admin_content %}
+{% include 'core/includes/page_header.html' with title='Admin Overview' subtitle='Manage trainers and subscriptions.' %}
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  {% include 'core/includes/stat_card.html' with label='Total Trainers' value=total_trainers %}
+  {% include 'core/includes/stat_card.html' with label='Active Subscriptions' value=active_subs %}
+  {% include 'core/includes/stat_card.html' with label='Archived' value=archived_subs %}
+</div>
+
+<div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="font-medium">Subscriptions</h2>
+    <form method="get" class="flex gap-2">
+      <input type="text" name="search" value="{{ search }}" placeholder="Search trainers..."
+             class="border border-gray-200 rounded-md px-3 py-1.5 text-sm w-48 focus:outline-none focus:border-[#2D6A4F]">
+      <button type="submit" class="text-sm border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50">Search</button>
+    </form>
+  </div>
+
+  {% if page.object_list %}
+    <table class="w-full">
+      <thead>
+        <tr class="text-xs text-gray-400 border-b border-gray-100">
+          <th class="text-left px-6 py-3 font-medium">Trainer</th>
+          <th class="text-left px-6 py-3 font-medium">Plan</th>
+          <th class="text-left px-6 py-3 font-medium">Start Date</th>
+          <th class="text-left px-6 py-3 font-medium">End Date</th>
+          <th class="text-left px-6 py-3 font-medium">Status</th>
+          <th class="text-left px-6 py-3 font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for sub in page.object_list %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <p class="text-sm font-medium">{{ sub.trainer.username }}</p>
+              <p class="text-xs text-gray-400">{{ sub.trainer.email }}</p>
+            </td>
+            <td class="px-6 py-4">
+  <span class="text-xs px-2 py-1 rounded-md
+               {% if sub.plan_type == 'pro' %}bg-[#2D6A4F] text-white
+               {% elif sub.plan_type == 'basic' %}bg-[#D8F3DC] text-[#2D6A4F]
+               {% else %}bg-gray-100 text-gray-500{% endif %}">
+    {{ sub.get_plan_type_display }}
+  </span>
+</td>
+            <td class="px-6 py-4 text-sm text-gray-500">{{ sub.start_date|date:"M d, Y" }}</td>
+            <td class="px-6 py-4 text-sm text-gray-500">{{ sub.end_date|date:"M d, Y" }}</td>
+            <td class="px-6 py-4">
+              {% if sub.status == 'active' %}
+                <span class="text-xs bg-[#D8F3DC] text-[#2D6A4F] px-2 py-1 rounded-md">Active</span>
+              {% else %}
+                <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md">Archived</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4">
+              <a href="/admin/core/subscription/{{ sub.id }}/change/" target="_blank"
+                 class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">
+                Edit ↗
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+      <p class="text-xs text-gray-400">
+        Showing {{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }}
+      </p>
+      <div class="flex gap-1">
+        {% if page.has_previous %}
+          <a href="?page={{ page.previous_page_number }}{% if search %}&search={{ search }}{% endif %}"
+             class="border border-gray-200 px-3 py-1 rounded-md text-xs hover:bg-gray-50">Prev</a>
+        {% else %}
+          <span class="border border-gray-100 px-3 py-1 rounded-md text-xs text-gray-300">Prev</span>
+        {% endif %}
+        {% if page.has_next %}
+          <a href="?page={{ page.next_page_number }}{% if search %}&search={{ search }}{% endif %}"
+             class="border border-gray-200 px-3 py-1 rounded-md text-xs hover:bg-gray-50">Next</a>
+        {% else %}
+          <span class="border border-gray-100 px-3 py-1 rounded-md text-xs text-gray-300">Next</span>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="p-12 text-center">
+      <p class="text-sm text-gray-500 mb-4">
+        {% if search %}No subscriptions match your search.{% else %}No subscriptions yet.{% endif %}
+      </p>
+      <a href="/admin/core/subscription/add/" target="_blank" class="inline-block bg-[#2D6A4F] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+        Add Subscription ↗
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

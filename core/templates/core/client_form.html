@@ -1,0 +1,80 @@
+{% extends 'core/trainer_base.html' %}
+{% block title %}{{ form_title }} — TrainForge{% endblock %}
+
+{% block trainer_content %}
+{% include 'core/includes/page_header.html' with title=form_title subtitle='Client details.' %}
+
+<div class="max-w-2xl bg-white border border-gray-200 rounded-xl p-8">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label for="id_name" class="block text-sm font-medium mb-1">Name</label>
+      <input type="text" name="name" id="id_name" value="{{ values.name|default:'' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label for="id_email" class="block text-sm font-medium mb-1">Email</label>
+      <input type="email" name="email" id="id_email" value="{{ values.email|default:'' }}" required
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div>
+      <label for="id_phone" class="block text-sm font-medium mb-1">Phone</label>
+      <input type="text" name="phone" id="id_phone" value="{{ values.phone|default:'' }}"
+             class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+    </div>
+
+    <div class="border-t border-gray-100 pt-4">
+      <p class="text-xs text-gray-400 mb-3">Optional — helps personalise AI suggestions and training plans.</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label for="id_age" class="block text-sm font-medium mb-1">Age</label>
+          <input type="number" name="age" id="id_age" min="1" max="120" value="{{ values.age|default:'' }}"
+                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        </div>
+        <div>
+          <label for="id_fitness_level" class="block text-sm font-medium mb-1">Fitness Level</label>
+          <select name="fitness_level" id="id_fitness_level"
+                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+            <option value="">—</option>
+            <option value="beginner" {% if values.fitness_level == 'beginner' %}selected{% endif %}>Beginner</option>
+            <option value="intermediate" {% if values.fitness_level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+            <option value="advanced" {% if values.fitness_level == 'advanced' %}selected{% endif %}>Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="id_height_cm" class="block text-sm font-medium mb-1">Height (cm)</label>
+          <input type="number" name="height_cm" id="id_height_cm" min="1" max="300" value="{{ values.height_cm|default:'' }}"
+                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        </div>
+        <div>
+          <label for="id_weight_kg" class="block text-sm font-medium mb-1">Weight (kg)</label>
+          <input type="number" step="0.1" name="weight_kg" id="id_weight_kg" min="0" value="{{ values.weight_kg|default:'' }}"
+                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label for="id_goals" class="block text-sm font-medium mb-1">Goals</label>
+      <textarea name="goals" id="id_goals" rows="3"
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.goals|default:'' }}</textarea>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="bg-[#2D6A4F] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#245840]">
+        {{ submit_label }}
+      </button>
+      <a href="{% url 'clients_list' %}" class="border border-gray-200 px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}
