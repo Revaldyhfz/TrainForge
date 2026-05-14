@@ -17,3 +17,15 @@ Generative AI tools were used during development of TrainForge. The declaration 
 - All AI-generated code was reviewed, edited, and tested by me before being committed
 - Business logic decisions (data model relationships, role authorisation flow, exercise type system) were my design
 - Architecture choices are my own
+
+## Login Credentials
+
+Deployment URL: **https://trainforge.onrender.com**
+
+(First request may take ~30 seconds — Render free tier spins down after idle.)
+
+| Role | Username | Password |
+|---|---|---|
+| Admin | `admin` | `AdminPass123!` |
+| Trainer | `james` | `TrainerPass123!` |
+| Trainer | `amy` | `TrainerPass123!` |
