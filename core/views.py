@@ -755,13 +755,11 @@ def progress_create(request):
         client_id = request.POST.get('client_id', '')
         exercise_id = request.POST.get('exercise_id', '')
         logged_date = request.POST.get('logged_date', '')
-        sets_completed = request.POST.get('sets_completed', '')
-        reps_completed = request.POST.get('reps_completed', '')
-        weight_kg = request.POST.get('weight_kg', '0')
         notes = request.POST.get('notes', '').strip()
+        post_values = _progress_values_from_post(request.POST)
 
-        if not client_id or not exercise_id or not logged_date or not sets_completed or not reps_completed:
-            messages.error(request, 'Client, exercise, date, sets, and reps are required.')
+        if not client_id or not exercise_id or not logged_date:
+            messages.error(request, 'Client, exercise, and date are required.')
             return render(request, 'core/progress_form.html', {
                 'active_nav': 'progress',
                 'form_title': 'Log Session',
@@ -769,24 +767,34 @@ def progress_create(request):
                 'log': None,
                 'clients': clients,
                 'exercises': exercises,
-                'values': {
-                    'client_id': client_id, 'exercise_id': exercise_id,
-                    'logged_date': logged_date,
-                    'sets_completed': sets_completed, 'reps_completed': reps_completed,
-                    'weight_kg': weight_kg, 'notes': notes,
-                },
+                'values': post_values,
             })
 
         client = get_object_or_404(Client, id=client_id, trainer=request.user)
         exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
 
+        fields = _progress_fields_from_post(exercise, request.POST)
+        if fields['missing']:
+            messages.error(request, 'Please fill in the required fields for this exercise type.')
+            return render(request, 'core/progress_form.html', {
+                'active_nav': 'progress',
+                'form_title': 'Log Session',
+                'submit_label': 'Save Log',
+                'log': None,
+                'clients': clients,
+                'exercises': exercises,
+                'values': post_values,
+            })
+
         ProgressLog.objects.create(
             client=client,
             exercise=exercise,
             logged_at=datetime.strptime(logged_date, "%Y-%m-%d"),
-            sets_completed=int(sets_completed),
-            reps_completed=int(reps_completed),
-            weight_kg=float(weight_kg or 0),
+            sets_completed=fields['sets_completed'],
+            reps_completed=fields['reps_completed'],
+            weight_kg=fields['weight_kg'],
+            duration_minutes=fields['duration_minutes'],
+            distance_km=fields['distance_km'],
             notes=notes,
         )
         messages.success(request, 'Progress logged.')
@@ -815,26 +823,49 @@ def progress_edit(request, log_id):
         client_id = request.POST.get('client_id', '')
         exercise_id = request.POST.get('exercise_id', '')
         logged_date = request.POST.get('logged_date', '')
-        sets_completed = request.POST.get('sets_completed', '')
-        reps_completed = request.POST.get('reps_completed', '')
-        weight_kg = request.POST.get('weight_kg', '0')
         notes = request.POST.get('notes', '').strip()
+        post_values = _progress_values_from_post(request.POST)
 
-        if not client_id or not exercise_id or not logged_date or not sets_completed or not reps_completed:
-            messages.error(request, 'Client, exercise, date, sets, and reps are required.')
-        else:
-            client = get_object_or_404(Client, id=client_id, trainer=request.user)
-            exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
-            log.client = client
-            log.exercise = exercise
-            log.logged_at = datetime.strptime(logged_date, "%Y-%m-%d")
-            log.sets_completed = int(sets_completed)
-            log.reps_completed = int(reps_completed)
-            log.weight_kg = float(weight_kg or 0)
-            log.notes = notes
-            log.save()
-            messages.success(request, 'Log updated.')
-            return redirect('progress_list')
+        if not client_id or not exercise_id or not logged_date:
+            messages.error(request, 'Client, exercise, and date are required.')
+            return render(request, 'core/progress_form.html', {
+                'active_nav': 'progress',
+                'form_title': 'Edit Log',
+                'submit_label': 'Save Changes',
+                'log': log,
+                'clients': clients,
+                'exercises': exercises,
+                'values': post_values,
+            })
+
+        client = get_object_or_404(Client, id=client_id, trainer=request.user)
+        exercise = get_object_or_404(Exercise, id=exercise_id, training_plan__trainer=request.user)
+        fields = _progress_fields_from_post(exercise, request.POST)
+
+        if fields['missing']:
+            messages.error(request, 'Please fill in the required fields for this exercise type.')
+            return render(request, 'core/progress_form.html', {
+                'active_nav': 'progress',
+                'form_title': 'Edit Log',
+                'submit_label': 'Save Changes',
+                'log': log,
+                'clients': clients,
+                'exercises': exercises,
+                'values': post_values,
+            })
+
+        log.client = client
+        log.exercise = exercise
+        log.logged_at = datetime.strptime(logged_date, "%Y-%m-%d")
+        log.sets_completed = fields['sets_completed']
+        log.reps_completed = fields['reps_completed']
+        log.weight_kg = fields['weight_kg']
+        log.duration_minutes = fields['duration_minutes']
+        log.distance_km = fields['distance_km']
+        log.notes = notes
+        log.save()
+        messages.success(request, 'Log updated.')
+        return redirect('progress_list')
 
     return render(request, 'core/progress_form.html', {
         'active_nav': 'progress',
@@ -850,6 +881,8 @@ def progress_edit(request, log_id):
             'sets_completed': log.sets_completed,
             'reps_completed': log.reps_completed,
             'weight_kg': log.weight_kg,
+            'duration_minutes': log.duration_minutes,
+            'distance_km': log.distance_km,
             'notes': log.notes,
         },
     })
@@ -1057,6 +1090,61 @@ def _float_or_none(value):
         return float(value) if value not in (None, '') else None
     except (ValueError, TypeError):
         return None
+
+
+def _progress_fields_from_post(exercise, post):
+    ex_type = exercise.exercise_type
+    if ex_type == ExerciseType.REPS:
+        sets = _int_or_none(post.get('sets_completed'))
+        reps = _int_or_none(post.get('reps_completed'))
+        return {
+            'sets_completed': sets,
+            'reps_completed': reps,
+            'weight_kg': _float_or_none(post.get('weight_kg')),
+            'duration_minutes': None,
+            'distance_km': None,
+            'missing': not (sets and reps),
+        }
+    if ex_type == ExerciseType.DURATION:
+        sets = _int_or_none(post.get('sets_completed_dur'))
+        duration = _int_or_none(post.get('duration_minutes'))
+        return {
+            'sets_completed': sets,
+            'reps_completed': None,
+            'weight_kg': None,
+            'duration_minutes': duration,
+            'distance_km': None,
+            'missing': not (sets and duration),
+        }
+    if ex_type == ExerciseType.DISTANCE:
+        distance = _float_or_none(post.get('distance_km'))
+        return {
+            'sets_completed': None,
+            'reps_completed': None,
+            'weight_kg': None,
+            'duration_minutes': None,
+            'distance_km': distance,
+            'missing': not distance,
+        }
+    return {
+        'sets_completed': None, 'reps_completed': None, 'weight_kg': None,
+        'duration_minutes': None, 'distance_km': None, 'missing': True,
+    }
+
+
+def _progress_values_from_post(post):
+    # keep raw input around so the form can re-render after a validation error
+    return {
+        'client_id': post.get('client_id', ''),
+        'exercise_id': post.get('exercise_id', ''),
+        'logged_date': post.get('logged_date', ''),
+        'sets_completed': post.get('sets_completed') or post.get('sets_completed_dur', ''),
+        'reps_completed': post.get('reps_completed', ''),
+        'weight_kg': post.get('weight_kg', ''),
+        'duration_minutes': post.get('duration_minutes', ''),
+        'distance_km': post.get('distance_km', ''),
+        'notes': post.get('notes', '').strip(),
+    }
 
 
 def _exercise_form_context(plan, exercise, form_title, submit_label, values):
