@@ -30,11 +30,29 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-OPENAI_API_KEY = os.getenv('ANTHROPIC_API_KEY')
-
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# Production-only security settings. DEBUG=False means we're deployed.
+if not DEBUG:
+    # Force HTTPS — redirect any http:// requests to https://
+    SECURE_SSL_REDIRECT = True
+
+    # HSTS — tell browsers to remember "always use HTTPS for this domain" for 1 year
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Send cookies only over HTTPS, never over plain HTTP
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # Prevent the browser from MIME-sniffing responses
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    # Prevent the site from being embedded in iframes (clickjacking protection)
+    X_FRAME_OPTIONS = 'DENY'
 
 RESEND_API_KEY = os.getenv('RESEND_API_KEY')
 EMAIL_FROM_ADDRESS = os.getenv('EMAIL_FROM_ADDRESS', 'onboarding@resend.dev')

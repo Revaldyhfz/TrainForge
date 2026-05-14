@@ -72,12 +72,13 @@
               <span class="text-sm font-medium">{{ m.weight_kg }} kg</span>
               <span class="text-xs text-gray-400 ml-2">{{ m.logged_at|date:"M d, Y" }}</span>
             </div>
-            <form method="post" action="{% url 'body_weight_delete' m.id %}">
-              {% csrf_token %}
-              <button type="submit" class="text-xs text-red-400 hover:text-red-600">
-                Delete
-              </button>
-            </form>
+            <form method="post" action="{% url 'body_weight_delete' m.id %}"
+      onsubmit="return confirm('Delete this body weight entry?');">
+  {% csrf_token %}
+  <button type="submit" class="text-xs text-red-400 hover:text-red-600">
+    Delete
+  </button>
+</form>
           </div>
         {% endfor %}
       </div>
@@ -115,12 +116,13 @@
                     <a href="{% url 'progress_edit' log.id %}" class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">
                       Edit
                     </a>
-                    <form method="post" action="{% url 'progress_delete' log.id %}">
-                      {% csrf_token %}
-                      <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50">
-                        Delete
-                      </button>
-                    </form>
+                    <form method="post" action="{% url 'progress_delete' log.id %}"
+      onsubmit="return confirm('Delete this progress entry? This cannot be undone.');">
+  {% csrf_token %}
+  <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50">
+    Delete
+  </button>
+</form>
                   </div>
                 </td>
               </tr>

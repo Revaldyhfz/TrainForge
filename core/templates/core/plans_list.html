@@ -41,12 +41,13 @@
             Edit
           </a>
           {% if plan.status == 'active' %}
-            <form method="post" action="{% url 'plan_archive' plan.id %}">
-              {% csrf_token %}
-              <button type="submit" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md text-red-500 hover:bg-red-50">
-                Archive
-              </button>
-            </form>
+            <form method="post" action="{% url 'plan_archive' plan.id %}"
+      onsubmit="return confirm('Archive {{ plan.title|escapejs }}? You can restore it later.');">
+  {% csrf_token %}
+  <button type="submit" class="text-xs border border-gray-200 px-3 py-1.5 rounded-md text-red-500 hover:bg-red-50">
+    Archive
+  </button>
+</form>
           {% else %}
             <form method="post" action="{% url 'plan_restore' plan.id %}">
               {% csrf_token %}

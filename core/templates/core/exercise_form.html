@@ -9,13 +9,13 @@
     {% csrf_token %}
 
     <div>
-      <label class="block text-sm font-medium mb-1">Exercise Name</label>
-      <input type="text" name="name" value="{{ values.name|default:'' }}" required
+      <label for="id_name" class="block text-sm font-medium mb-1">Exercise Name</label>
+      <input type="text" name="name" id="id_name" value="{{ values.name|default:'' }}" required
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Type</label>
+      <label for="exercise-type" class="block text-sm font-medium mb-1">Type</label>
       <select name="exercise_type" id="exercise-type" required
               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         <option value="reps" {% if values.exercise_type == 'reps' or not values.exercise_type %}selected{% endif %}>
@@ -31,40 +31,40 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Description</label>
-      <textarea name="description" rows="2"
+      <label for="id_description" class="block text-sm font-medium mb-1">Description</label>
+      <textarea name="description" id="id_description" rows="2"
                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.description|default:'' }}</textarea>
     </div>
 
     <div id="fields-reps" class="grid grid-cols-2 gap-3 type-fields">
       <div>
-        <label class="block text-sm font-medium mb-1">Sets</label>
-        <input type="number" name="sets" min="1" placeholder="e.g. 3" value="{{ values.sets|default:'' }}"
+        <label for="id_sets" class="block text-sm font-medium mb-1">Sets</label>
+        <input type="number" name="sets" id="id_sets" min="1" placeholder="e.g. 3" value="{{ values.sets|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Reps</label>
-        <input type="number" name="reps" min="1" placeholder="e.g. 10" value="{{ values.reps|default:'' }}"
+        <label for="id_reps" class="block text-sm font-medium mb-1">Reps</label>
+        <input type="number" name="reps" id="id_reps" min="1" placeholder="e.g. 10" value="{{ values.reps|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
     </div>
 
     <div id="fields-duration" class="grid grid-cols-2 gap-3 type-fields hidden">
       <div>
-        <label class="block text-sm font-medium mb-1">Sets</label>
-        <input type="number" name="sets_duration" min="1" placeholder="e.g. 3" value="{{ values.sets|default:'' }}"
+        <label for="id_sets_duration" class="block text-sm font-medium mb-1">Sets</label>
+        <input type="number" name="sets_duration" id="id_sets_duration" min="1" placeholder="e.g. 3" value="{{ values.sets|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Duration (minutes)</label>
-        <input type="number" name="duration_minutes" min="1" placeholder="e.g. 5" value="{{ values.duration_minutes|default:'' }}"
+        <label for="id_duration_minutes" class="block text-sm font-medium mb-1">Duration (minutes)</label>
+        <input type="number" name="duration_minutes" id="id_duration_minutes" min="1" placeholder="e.g. 5" value="{{ values.duration_minutes|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
     </div>
 
     <div id="fields-distance" class="type-fields hidden">
-      <label class="block text-sm font-medium mb-1">Distance (km)</label>
-      <input type="number" step="0.1" name="distance_km" min="0" placeholder="e.g. 5" value="{{ values.distance_km|default:'' }}"
+      <label for="id_distance_km" class="block text-sm font-medium mb-1">Distance (km)</label>
+      <input type="number" step="0.1" name="distance_km" id="id_distance_km" min="0" placeholder="e.g. 5" value="{{ values.distance_km|default:'' }}"
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 

@@ -1,194 +1,167 @@
 # TrainForge
 
-A personal training management application for individual trainers to manage clients, create custom training plans, schedule appointments, and track client progress over time.
+A personal training management web application for personal trainers. Built for INFS3202 (Web Information Systems) at The University of Queensland.
+
+TrainForge lets trainers manage clients, build training plans, schedule appointments, log progress, and generate AI-assisted exercise programs.
 
 ## Tech Stack
 
-- **Backend**: Django 5.2 (Python)
+- **Backend**: Django 5.2 (Python 3.13)
 - **Database**: PostgreSQL 18
-- **Frontend**: Tailwind CSS, vanilla JavaScript
-- **Email**: Resend
-- **AI**: OpenAI API for exercise suggestion generation
-- **Calendar**: iCalendar format for appointment exports
+- **Frontend**: Server-rendered Django templates with Tailwind CSS (CDN)
+- **AI**: OpenAI gpt-5.4-mini (via API key)
+- **Email**: Resend (with iCalendar `.ics` attachments)
 
 ## Prerequisites
 
-- Python 3.13+
-- PostgreSQL 18+ (or SQLite for development)
-- pip (Python package manager)
+- Python 3.13
+- PostgreSQL 18
+- An OpenAI API key (for AI exercise generation)
+- A Resend API key (for email features)
 
 ## Setup
 
-### 1. Clone the repository
+### 1. Clone and create a virtual environment
 
 ```bash
-git clone <repository-url>
-cd trainforge-fresh
-```
-
-### 2. Create and activate a virtual environment
-
-```bash
+git clone https://github.com/Revaldyhfz/TrainForge.git
+cd TrainForge
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 3. Install dependencies
-
-```bash
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Create a `.env` file
+### 2. Create the database
 
-Copy `.env.example` to `.env` and fill in the required values:
+```bash
+createdb trainforge
+```
+
+### 3. Configure environment variables
+
+Copy `.env.example` to `.env` and fill in the values:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your actual secrets (SECRET_KEY, DATABASE_URL, API keys).
+Then edit `.env`. The most important ones:
 
-### 5. Apply migrations
+- `SECRET_KEY` — generate one with `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
+- `DATABASE_URL` — your PostgreSQL connection string
+- `OPENAI_API_KEY` — for AI features
+- `RESEND_API_KEY` — for email features
+
+### 4. Run migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### 6. Create a superuser (admin account)
+### 5. Create an admin user
 
 ```bash
 python manage.py createsuperuser
 ```
 
-Follow the prompts to set a username, email, and password.
+After creating, log in to `http://localhost:8000/admin/` and create a `Profile` for this user with role set to `admin`. This grants access to the custom admin dashboard at `/admin-overview/`.
 
-### 7. Run the development server
+### 6. Run the development server
 
 ```bash
 python manage.py runserver
 ```
 
-The app is now running at `http://localhost:8000/`.
-
-## Accessing the App
-
-- **Home page**: `http://localhost:8000/`
-- **Admin**: `http://localhost:8000/admin/` (use superuser credentials)
-- **Register**: `http://localhost:8000/register/` to create a trainer account
-- **Login**: `http://localhost:8000/login/` to log in
+Visit `http://localhost:8000/`.
 
 ## Test Accounts
 
-The app uses Django's built-in user system. To test functionality:
+The marker should register their own trainer account via `/register/`. Each new registration:
 
-1. Create a trainer account via `/register/` or using the `createsuperuser` command
-2. Log in and start adding clients, plans, and appointments
-3. The marker should create their own test accounts to verify features
+- Creates a User with role `trainer`
+- Creates a default Free subscription valid for 1 year
+- Redirects to the trainer dashboard
 
-## Environment Variables Required
-
-See `.env.example` for the full list. Key variables:
-
-- `SECRET_KEY`: Django secret key (generate via `django-insecure-...` pattern)
-- `DEBUG`: Set to `False` for production
-- `DATABASE_URL`: PostgreSQL connection string
-- `OPENAI_API_KEY`: Your OpenAI API key (for AI exercise generation)
-- `RESEND_API_KEY`: Your Resend email API key
-- `EMAIL_FROM_ADDRESS`: Email address for sending plan/appointment notifications
-- `EMAIL_FROM_NAME`: Display name for emails
+For admin access, follow Step 5 above to promote a superuser.
 
 ## Project Structure
 
 ```
-trainforge-fresh/
-├── config/              # Django project settings and routing
-│   ├── settings.py      # Main Django configuration
-│   ├── urls.py          # Top-level URL routing
-│   ├── asgi.py
-│   └── wsgi.py
-├── core/                # Main app: models, views, business logic
-│   ├── models.py        # Database models (Client, TrainingPlan, Exercise, etc.)
-│   ├── views.py         # View functions and route handlers
-│   ├── urls.py          # App-specific URL routing
-│   ├── admin.py         # Django admin registration
-│   ├── permissions.py   # Role-based access control decorators
-│   ├── ai_service.py    # OpenAI integration for plan generation
-│   ├── email_service.py # Email sending via Resend
-│   ├── ics_service.py   # iCalendar file generation for appointments
-│   ├── calendar_helper.py # Month grid building for calendar view
-│   └── migrations/      # Database schema versions
-├── core/templates/      # Django HTML templates
-│   ├── core/            # Page templates
-│   ├── core/includes/   # Reusable template components
-│   └── emails/          # Email templates
-├── static/              # CSS, JavaScript, images (empty, using Tailwind CDN)
-├── manage.py            # Django management command entry point
-├── requirements.txt     # Python dependencies
-├── .env.example         # Environment variables template
-├── .gitignore           # Git ignore file
-└── README.md            # This file
+trainforge/
+├── config/                 # Django project settings
+│   ├── settings.py         # Includes production security flags under `if not DEBUG`
+│   └── urls.py
+├── core/                   # Main app
+│   ├── models.py           # All domain models
+│   ├── views.py            # All view functions (function-based)
+│   ├── urls.py
+│   ├── admin.py            # Django Admin registration
+│   ├── permissions.py      # Role-based access decorators
+│   ├── ai_service.py       # OpenAI integration
+│   ├── email_service.py    # Resend integration
+│   ├── ics_service.py      # iCalendar file generation
+│   ├── calendar_helper.py  # Month grid builder for appointments
+│   ├── migrations/
+│   └── templates/
+│       ├── core/           # Page templates
+│       │   └── includes/   # Reusable partials (header, footer, nav)
+│       └── emails/         # Email templates
+├── manage.py
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
-## Key Features for the Marker
+## Key Features
 
-### Client Management
+### Trainer features
 
-- Add/edit/archive clients with profile details (age, height, weight, fitness level, goals)
-- Track client availability preferences
+- **Clients** — full CRUD with soft-delete (archive/restore)
+- **Training Plans** — full CRUD with nested Exercises
+- **Exercises** — three types: reps-based, duration-based, distance-based
+- **Appointments** — calendar view with month navigation
+- **Progress Logs** — per-exercise performance tracking
+- **Body Weight** — inline weight tracking on the progress page
+- **AI Exercise Generator** — conversational refinement loop using OpenAI
+- **Email Plans** — send a training plan to a client
+- **Email Appointments** — auto-send a session confirmation with `.ics` attachment
 
-### Training Plans
+### Admin features
 
-- Create custom training plans with multiple exercises
-- AI-powered exercise suggestion using OpenAI API
-- View plan details and exercise lists
-- Email plans to clients in HTML format
+- Custom admin overview at `/admin-overview/` with stats and paginated subscription table
+- Django Admin at `/admin/` for full CRUD on all models
 
-### Exercises
+## Security Notes
 
-- Create exercises with three types: reps-based, duration-based, distance-based
-- Set sets/reps, duration (minutes), or distance (km) as appropriate
-- Add descriptions and form cues
+- Passwords hashed with Django's default `pbkdf2_sha256` (salted, 600,000 iterations, OWASP-compliant)
+- CSRF protection on every form
+- Role-based access via `@trainer_required` and `@admin_required` decorators
+- Per-trainer data isolation: every query filters by `trainer=request.user`; cross-trainer access returns 404
+- SQL injection protection via Django ORM (parameterised queries throughout)
+- Secrets loaded from environment variables; `.env` is gitignored
+- Production-only security flags (HTTPS redirect, HSTS, secure cookies, X-Frame-Options) wrapped in `if not DEBUG`
 
-### Appointments
+## Accessibility Notes
 
-- Calendar view for scheduling sessions
-- Book appointments with clients
-- Automatic iCalendar (.ics) file generation
-- Email appointment confirmation to clients
+The interface targets WCAG 2.1 Level AA:
 
-### Progress Tracking
+- Semantic HTML throughout (`<main>`, `<nav>`, `<aside>`, `<header>`, `<footer>`)
+- Skip-to-content link on every page (visible on keyboard focus)
+- All form labels programmatically bound to inputs via matching `for` and `id` attributes
+- Flash messages announced via `role="status" aria-live="polite"`
+- Decorative SVGs hidden from screen readers via `aria-hidden="true"`
+- Icon-only buttons (hamburger toggle) have descriptive `aria-label`
+- Visible focus states on all interactive elements via `:focus-visible`
+- Mobile responsive with hamburger sidebar toggle below 768px
+- Confirmation prompts on all destructive actions and irreversible operations (email sending)
 
-- Log exercise performance (sets completed, reps, weight)
-- Log body weight/measurements
-- Filter by client and exercise
-- View progress history over time
+## Notes for Marker
 
-### Admin Dashboard
+- The AI feature uses OpenAI's `gpt-5.4-mini` model with `response_format=json_object` for structured output. The conversational refinement loop is in `core/views.py` (`ai_chat` view) and `core/ai_service.py`.
+- Free tier of Resend can only send emails to the email registered with the Resend account, so test client emails may need to use that address.
+- Subscriptions belong to trainers and represent the trainer's SaaS access tier. They are admin-managed metadata and do not currently gate trainer features (out of scope for the rubric).
+- The data model uses soft-delete (archive/restore) for top-level entities (clients, plans, subscriptions) and hard-delete for sub-entities (exercises, progress logs, appointments — cancel preserves history).
 
-- View trainer subscriptions
-- Search and manage trainers
+## License
 
-## Production Notes
-
-For production deployment:
-
-- Set `DEBUG=False` in your `.env`
-- Configure `SECRET_KEY` with a strong random value
-- Use HTTPS and secure database connection
-- Set `ALLOWED_HOSTS` appropriately
-- Run `python manage.py collectstatic` to gather static files
-- Use a production WSGI server (e.g., Gunicorn)
-
-## Notes for the Marker
-
-- The app emphasizes simplicity and clarity over advanced patterns
-- All views use Django's built-in authentication and ORM
-- Role-based access is enforced via decorator functions on views
-- Templates are written in plain Django template language without custom tags
-- Styling uses Tailwind CSS via CDN
-- The project uses PostgreSQL; SQLite is also supported by default Django config
-
----
-
-**Course**: INFS3202 · University of Queensland · 2026
+This project was built for academic assessment at The University of Queensland and is not licensed for redistribution.

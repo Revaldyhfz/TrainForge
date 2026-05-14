@@ -10,14 +10,14 @@
       {% csrf_token %}
 
       <div>
-        <label class="block text-sm font-medium mb-1">Plan Title</label>
-        <input type="text" name="title" value="{{ values.title|default:'' }}" required
+        <label for="id_title" class="block text-sm font-medium mb-1">Plan Title</label>
+        <input type="text" name="title" id="id_title" value="{{ values.title|default:'' }}" required
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-1">Client</label>
-        <select name="client_id" required
+        <label for="id_client_id" class="block text-sm font-medium mb-1">Client</label>
+        <select name="client_id" id="id_client_id" required
                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
           <option value="">Select a client</option>
           {% for c in clients %}
@@ -29,8 +29,8 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-1">Description</label>
-        <textarea name="description" rows="3"
+        <label for="id_description" class="block text-sm font-medium mb-1">Description</label>
+        <textarea name="description" id="id_description" rows="3"
                   class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.description|default:'' }}</textarea>
       </div>
 
@@ -69,7 +69,8 @@
               </div>
               <div class="flex gap-2">
                 <a href="{% url 'exercise_edit' ex.id %}" class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">Edit</a>
-                <form method="post" action="{% url 'exercise_delete' ex.id %}">
+                <form method="post" action="{% url 'exercise_delete' ex.id %}"
+                      onsubmit="return confirm('Delete {{ ex.name|escapejs }}? This cannot be undone.');">
                   {% csrf_token %}
                   <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50">
                     Delete

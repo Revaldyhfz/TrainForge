@@ -1,37 +1,28 @@
 # core/views.py
 # View functions for public pages, auth, and clients.
 
+from datetime import datetime, date, timedelta
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Profile, UserRole, Client, ClientStatus
-from .permissions import trainer_required, admin_required, get_user_role
-from .models import Profile, UserRole, Client, ClientStatus, TrainingPlan, TrainingPlanStatus, Exercise
-from .email_service import send_appointment_email, send_training_plan_email
+from django.core.paginator import Paginator
 
-from datetime import datetime, date, timedelta
 from .models import (
-    Profile, UserRole, Client, ClientStatus, ClientFitnessLevel,
-    TrainingPlan, TrainingPlanStatus, Exercise, ExerciseType,
+    Profile, UserRole,
+    Client, ClientStatus, ClientFitnessLevel,
+    TrainingPlan, TrainingPlanStatus,
+    Exercise, ExerciseType,
     Appointment, AppointmentStatus,
     ProgressLog, BodyMeasurement,
     Subscription, SubscriptionStatus, SubscriptionPlanType,
 )
+from .permissions import trainer_required, admin_required, get_user_role
+from .email_service import send_appointment_email, send_training_plan_email
 from .calendar_helper import build_month_grid, get_prev_next_month
-
-from .models import (
-    Profile, UserRole, Client, ClientStatus, ClientFitnessLevel,
-    TrainingPlan, TrainingPlanStatus, Exercise, ExerciseType,
-    Appointment, AppointmentStatus,
-    ProgressLog, BodyMeasurement,
-    Subscription, SubscriptionStatus,
-)
-from django.core.paginator import Paginator
-
-import json
 from .ai_service import generate_exercises, build_progress_summary
-
 # Public pages and auth
 
 def home(request):
@@ -476,7 +467,6 @@ def exercise_create(request, plan_id):
             description=description,
             sets=int(sets),
             reps=int(reps),
-            duration_seconds=0,
             order_index=next_order,
         )
         messages.success(request, 'Exercise added.')
@@ -970,17 +960,6 @@ def ai_chat(request, plan_id):
         else:
             messages.success(request, f'{saved_count} exercises added.')
         return redirect('plan_edit', plan_id=plan.id)
-
-        plan.generated_by_ai = True
-        plan.save()
-
-        # Clean up session.
-        for key in ('ai_plan_id', 'ai_questionnaire', 'ai_conversation', 'ai_last_exercises', 'ai_last_message'):
-            request.session.pop(key, None)
-
-        messages.success(request, f'{len(last_exercises)} exercises added.')
-        return redirect('plan_edit', plan_id=plan.id)
-
     # Handle the "Refine" action — send feedback to AI.
     refinement_feedback = None
     if request.method == 'POST' and request.POST.get('action') == 'refine':

@@ -9,20 +9,20 @@
     {% csrf_token %}
 
     <div>
-      <label class="block text-sm font-medium mb-1">Name</label>
-      <input type="text" name="name" value="{{ values.name|default:'' }}" required
+      <label for="id_name" class="block text-sm font-medium mb-1">Name</label>
+      <input type="text" name="name" id="id_name" value="{{ values.name|default:'' }}" required
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Email</label>
-      <input type="email" name="email" value="{{ values.email|default:'' }}" required
+      <label for="id_email" class="block text-sm font-medium mb-1">Email</label>
+      <input type="email" name="email" id="id_email" value="{{ values.email|default:'' }}" required
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Phone</label>
-      <input type="text" name="phone" value="{{ values.phone|default:'' }}"
+      <label for="id_phone" class="block text-sm font-medium mb-1">Phone</label>
+      <input type="text" name="phone" id="id_phone" value="{{ values.phone|default:'' }}"
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
@@ -31,13 +31,13 @@
 
       <div class="grid grid-cols-2 gap-3 mb-3">
         <div>
-          <label class="block text-sm font-medium mb-1">Age</label>
-          <input type="number" name="age" min="1" max="120" value="{{ values.age|default:'' }}"
+          <label for="id_age" class="block text-sm font-medium mb-1">Age</label>
+          <input type="number" name="age" id="id_age" min="1" max="120" value="{{ values.age|default:'' }}"
                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Fitness Level</label>
-          <select name="fitness_level"
+          <label for="id_fitness_level" class="block text-sm font-medium mb-1">Fitness Level</label>
+          <select name="fitness_level" id="id_fitness_level"
                   class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
             <option value="">—</option>
             <option value="beginner" {% if values.fitness_level == 'beginner' %}selected{% endif %}>Beginner</option>
@@ -49,21 +49,21 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium mb-1">Height (cm)</label>
-          <input type="number" name="height_cm" min="1" max="300" value="{{ values.height_cm|default:'' }}"
+          <label for="id_height_cm" class="block text-sm font-medium mb-1">Height (cm)</label>
+          <input type="number" name="height_cm" id="id_height_cm" min="1" max="300" value="{{ values.height_cm|default:'' }}"
                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Weight (kg)</label>
-          <input type="number" step="0.1" name="weight_kg" min="0" value="{{ values.weight_kg|default:'' }}"
+          <label for="id_weight_kg" class="block text-sm font-medium mb-1">Weight (kg)</label>
+          <input type="number" step="0.1" name="weight_kg" id="id_weight_kg" min="0" value="{{ values.weight_kg|default:'' }}"
                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         </div>
       </div>
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Goals</label>
-      <textarea name="goals" rows="3"
+      <label for="id_goals" class="block text-sm font-medium mb-1">Goals</label>
+      <textarea name="goals" id="id_goals" rows="3"
                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.goals|default:'' }}</textarea>
     </div>
 

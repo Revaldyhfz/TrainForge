@@ -17,13 +17,14 @@
       <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-md self-center">Archived</span>
     {% endif %}
     <a href="{% url 'plan_edit' plan.id %}" class="text-sm border border-gray-200 px-4 py-2 rounded-md hover:bg-gray-50">Edit</a>
-    <form method="post" action="{% url 'plan_send_email' plan.id %}" id="send-plan-form">
-      {% csrf_token %}
-      <button type="submit" id="send-plan-btn"
-              class="text-sm bg-[#2D6A4F] text-white px-4 py-2 rounded-md hover:bg-[#245840] disabled:opacity-50">
-        Send to Client
-      </button>
-    </form>
+    <form method="post" action="{% url 'plan_send_email' plan.id %}" id="send-plan-form"
+      onsubmit="return confirm('Send this training plan to {{ plan.client.name|escapejs }} at {{ plan.client.email|escapejs }}?');">
+  {% csrf_token %}
+  <button type="submit" id="send-plan-btn"
+          class="text-sm bg-[#2D6A4F] text-white px-4 py-2 rounded-md hover:bg-[#245840] disabled:opacity-50">
+    Send to Client
+  </button>
+</form>
     <a href="{% url 'plans_list' %}" class="text-sm border border-gray-200 px-4 py-2 rounded-md hover:bg-gray-50">Back</a>
   </div>
 </div>

@@ -5,12 +5,13 @@
 {% include 'core/includes/page_header.html' with title=form_title %}
 
 <div class="max-w-2xl bg-white border border-gray-200 rounded-xl p-8">
-  <form method="post" class="space-y-4" id="appointment-form">
+  <form method="post" class="space-y-4" id="appointment-form"
+      onsubmit="return confirm('Book this session? A confirmation email with a calendar invite will be sent to the client.');">
     {% csrf_token %}
 
     <div>
-      <label class="block text-sm font-medium mb-1">Client</label>
-      <select name="client_id" required
+      <label for="id_client_id" class="block text-sm font-medium mb-1">Client</label>
+      <select name="client_id" id="id_client_id" required
               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         <option value="">Select a client</option>
         {% for c in clients %}
@@ -23,26 +24,26 @@
 
     <div class="grid grid-cols-2 gap-3">
       <div>
-        <label class="block text-sm font-medium mb-1">Date</label>
-        <input type="date" name="scheduled_date" value="{{ values.scheduled_date|default:'' }}" required
+        <label for="id_scheduled_date" class="block text-sm font-medium mb-1">Date</label>
+        <input type="date" name="scheduled_date" id="id_scheduled_date" value="{{ values.scheduled_date|default:'' }}" required
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Time</label>
-        <input type="time" name="scheduled_time" value="{{ values.scheduled_time|default:'' }}" required
+        <label for="id_scheduled_time" class="block text-sm font-medium mb-1">Time</label>
+        <input type="time" name="scheduled_time" id="id_scheduled_time" value="{{ values.scheduled_time|default:'' }}" required
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Duration (minutes)</label>
-      <input type="number" name="duration_minutes" min="15" step="15" value="{{ values.duration_minutes|default:60 }}"
+      <label for="id_duration_minutes" class="block text-sm font-medium mb-1">Duration (minutes)</label>
+      <input type="number" name="duration_minutes" id="id_duration_minutes" min="15" step="15" value="{{ values.duration_minutes|default:60 }}"
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Notes</label>
-      <textarea name="notes" rows="3"
+      <label for="id_notes" class="block text-sm font-medium mb-1">Notes</label>
+      <textarea name="notes" id="id_notes" rows="3"
                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">{{ values.notes|default:'' }}</textarea>
     </div>
 

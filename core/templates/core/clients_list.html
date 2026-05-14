@@ -33,10 +33,11 @@
               <div class="flex gap-2">
                 <a href="{% url 'client_edit' client.id %}" class="text-xs border border-gray-200 px-2 py-1 rounded-md hover:bg-gray-50">Edit</a>
                 {% if client.status == 'active' %}
-                  <form method="post" action="{% url 'client_archive' client.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50">Archive</button>
-                  </form>
+                  <form method="post" action="{% url 'client_archive' client.id %}"
+      onsubmit="return confirm('Archive {{ client.name|escapejs }}? You can restore them later.');">
+  {% csrf_token %}
+  <button type="submit" class="text-xs border border-gray-200 px-2 py-1 rounded-md text-red-500 hover:bg-red-50">Archive</button>
+</form>
                 {% else %}
                   <form method="post" action="{% url 'client_restore' client.id %}">
                     {% csrf_token %}

@@ -9,7 +9,7 @@
     {% csrf_token %}
 
     <div>
-      <label class="block text-sm font-medium mb-1">Client</label>
+      <label for="client-select" class="block text-sm font-medium mb-1">Client</label>
       <select name="client_id" id="client-select" required
               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         <option value="">Select a client</option>
@@ -22,7 +22,7 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Exercise</label>
+      <label for="exercise-select" class="block text-sm font-medium mb-1">Exercise</label>
       <select name="exercise_id" id="exercise-select" required
               class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
         <option value="">Select an exercise</option>
@@ -37,32 +37,32 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Date</label>
-      <input type="date" name="logged_date" value="{{ values.logged_date|default:'' }}" required
+      <label for="id_logged_date" class="block text-sm font-medium mb-1">Date</label>
+      <input type="date" name="logged_date" id="id_logged_date" value="{{ values.logged_date|default:'' }}" required
              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
     </div>
 
     <div class="grid grid-cols-3 gap-3">
       <div>
-        <label class="block text-sm font-medium mb-1">Sets</label>
-        <input type="number" name="sets_completed" min="1" placeholder="e.g. 3" value="{{ values.sets_completed|default:'' }}" required
+        <label for="id_sets_completed" class="block text-sm font-medium mb-1">Sets</label>
+        <input type="number" name="sets_completed" id="id_sets_completed" min="1" placeholder="e.g. 3" value="{{ values.sets_completed|default:'' }}" required
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Reps</label>
-        <input type="number" name="reps_completed" min="1" placeholder="e.g. 10" value="{{ values.reps_completed|default:'' }}" required
+        <label for="id_reps_completed" class="block text-sm font-medium mb-1">Reps</label>
+        <input type="number" name="reps_completed" id="id_reps_completed" min="1" placeholder="e.g. 10" value="{{ values.reps_completed|default:'' }}" required
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1">Weight (kg)</label>
-        <input type="number" name="weight_kg" min="0" step="0.5" placeholder="e.g. 50" value="{{ values.weight_kg|default:'' }}"
+        <label for="id_weight_kg" class="block text-sm font-medium mb-1">Weight (kg)</label>
+        <input type="number" name="weight_kg" id="id_weight_kg" min="0" step="0.5" placeholder="e.g. 50" value="{{ values.weight_kg|default:'' }}"
                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]">
       </div>
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Notes</label>
-      <textarea name="notes" rows="3" placeholder="Optional notes..."
+      <label for="id_notes" class="block text-sm font-medium mb-1">Notes</label>
+      <textarea name="notes" id="id_notes" rows="3" placeholder="Optional notes..."
                 class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#2D6A4F]"></textarea>
     </div>
 
