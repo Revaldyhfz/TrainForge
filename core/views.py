@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from .models import (
     Profile, UserRole,
@@ -889,7 +890,6 @@ def ai_questionnaire(request, plan_id):
                 'values': questionnaire,
             })
 
-        # Store questionnaire in session and trigger first AI call.
         request.session['ai_plan_id'] = plan.id
         request.session['ai_questionnaire'] = questionnaire
         request.session['ai_conversation'] = []
@@ -914,7 +914,6 @@ def ai_chat(request, plan_id):
     questionnaire = request.session['ai_questionnaire']
     conversation = request.session.get('ai_conversation', [])
 
-    # Handle the "Complete" action — append AI's exercises to the plan.
     if request.method == 'POST' and request.POST.get('action') == 'complete':
         last_exercises = request.session.get('ai_last_exercises', [])
         next_order = plan.exercises.count()
@@ -951,7 +950,6 @@ def ai_chat(request, plan_id):
         plan.generated_by_ai = True
         plan.save()
 
-        # Clean up session.
         for key in ('ai_plan_id', 'ai_questionnaire', 'ai_conversation', 'ai_last_exercises', 'ai_last_message'):
             request.session.pop(key, None)
 
@@ -960,12 +958,10 @@ def ai_chat(request, plan_id):
         else:
             messages.success(request, f'{saved_count} exercises added.')
         return redirect('plan_edit', plan_id=plan.id)
-    # Handle the "Refine" action — send feedback to AI.
     refinement_feedback = None
     if request.method == 'POST' and request.POST.get('action') == 'refine':
         refinement_feedback = request.POST.get('feedback', '').strip()
 
-    # Run the AI call (first load OR refinement).
     if request.method == 'POST' or 'ai_last_message' not in request.session:
         try:
             result = generate_exercises(
@@ -977,7 +973,6 @@ def ai_chat(request, plan_id):
                 refinement_feedback=refinement_feedback,
             )
 
-            # Update conversation history with this turn.
             new_history = list(conversation)
             if refinement_feedback:
                 new_history.append({"role": "user", "content": f"Feedback: {refinement_feedback}"})
@@ -1010,9 +1005,7 @@ def admin_overview(request):
     subscriptions = Subscription.objects.select_related('trainer').order_by('-created_at')
     if search:
         subscriptions = subscriptions.filter(
-            trainer__username__icontains=search,
-        ) | subscriptions.filter(
-            trainer__email__icontains=search,
+            Q(trainer__username__icontains=search) | Q(trainer__email__icontains=search)
         )
 
     paginator = Paginator(subscriptions, 10)

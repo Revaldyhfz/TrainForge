@@ -78,23 +78,18 @@
 </div>
 
 <script>
-  // Filter exercise dropdown to only show exercises for the selected client.
+  // When the trainer picks a client, hide exercises that don't belong to them.
   const clientSelect = document.getElementById('client-select');
   const exerciseSelect = document.getElementById('exercise-select');
-  const allExerciseOptions = Array.from(exerciseSelect.querySelectorAll('option'));
 
   function filterExercises() {
     const clientId = clientSelect.value;
-    allExerciseOptions.forEach(opt => {
-      const optClient = opt.dataset.clientId;
-      if (!optClient || optClient === clientId) {
-        opt.hidden = false;
-      } else {
-        opt.hidden = true;
-      }
-    });
-    const selected = exerciseSelect.selectedOptions[0];
-    if (selected && selected.dataset.clientId && selected.dataset.clientId !== clientId) {
+    const options = exerciseSelect.querySelectorAll('option');
+    for (const opt of options) {
+      const belongs = !opt.dataset.clientId || opt.dataset.clientId === clientId;
+      opt.hidden = !belongs;
+    }
+    if (exerciseSelect.selectedOptions[0] && exerciseSelect.selectedOptions[0].hidden) {
       exerciseSelect.value = '';
     }
   }
